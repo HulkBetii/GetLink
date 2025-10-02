@@ -640,8 +640,7 @@ class MainWindow(QMainWindow):
         row1_layout.addWidget(category_label)
         
         self.category_combo = QComboBox()
-        # Use userData=None as a stable sentinel for "All Categories"
-        self.category_combo.addItem(tr("category_all"), None)
+        self.category_combo.addItem(tr("category_all"))
         self.category_combo.setFixedWidth(150)
         self.category_combo.setStyleSheet("""
             QComboBox {
@@ -698,8 +697,7 @@ class MainWindow(QMainWindow):
         row1_layout.addWidget(subcategory_label)
         
         self.subcategory_combo = QComboBox()
-        # Use userData=None as a stable sentinel for "All Subcategories"
-        self.subcategory_combo.addItem(tr("subcategory_all"), None)
+        self.subcategory_combo.addItem(tr("subcategory_all"))
         self.subcategory_combo.setFixedWidth(150)
         self.subcategory_combo.setStyleSheet("""
             QComboBox {
@@ -1037,14 +1035,14 @@ class MainWindow(QMainWindow):
         
         # Clear and populate category combo
         self.category_combo.clear()
-        self.category_combo.addItem(tr("category_all"), None)
+        self.category_combo.addItem("All Categories")
         
         for category in categories:
             self.category_combo.addItem(category.name)
         
         # Clear subcategory combo initially
         self.subcategory_combo.clear()
-        self.subcategory_combo.addItem(tr("subcategory_all"), None)
+        self.subcategory_combo.addItem("All Subcategories")
         self.subcategory_combo.setEnabled(False)
     
     def _on_search_changed(self, text):
@@ -1053,9 +1051,9 @@ class MainWindow(QMainWindow):
     
     def _on_category_changed(self, category_name):
         """Handle category selection change."""
-        if self.category_combo.currentData() is None:
+        if category_name == "All Categories":
             self.subcategory_combo.clear()
-            self.subcategory_combo.addItem(tr("subcategory_all"), None)
+            self.subcategory_combo.addItem("All Subcategories")
             self.subcategory_combo.setEnabled(False)
         else:
             # Find the selected category and populate subcategories
@@ -1063,9 +1061,9 @@ class MainWindow(QMainWindow):
             for category in categories:
                 if category.name == category_name:
                     self.subcategory_combo.clear()
-                    self.subcategory_combo.addItem(tr("subcategory_all"), None)
+                    self.subcategory_combo.addItem("All Subcategories")
                     for subcategory in category.subcategories:
-                        self.subcategory_combo.addItem(subcategory, subcategory)
+                        self.subcategory_combo.addItem(subcategory)
                     self.subcategory_combo.setEnabled(True)
                     break
         
@@ -1118,14 +1116,13 @@ class MainWindow(QMainWindow):
         """Handle any filter change - get filtered courses and update results."""
         # Get current filter values
         search_text = self.search_input.text().strip()
-        # Pull stable values via userData; None means "All"
-        category = self.category_combo.currentData()
-        subcategory = self.subcategory_combo.currentData()
+        category = self.category_combo.currentText()
+        subcategory = self.subcategory_combo.currentText()
         
         # Apply filters
         courses = self.store.filter(
-            category=category if category else None,
-            subcategory=subcategory if subcategory else None,
+            category=category if category != "All Categories" else None,
+            subcategory=subcategory if subcategory != "All Subcategories" else None,
             text=search_text if search_text else None
         )
         
@@ -1150,9 +1147,8 @@ class MainWindow(QMainWindow):
         """Show all courses without filters."""
         # Clear all filters
         self.search_input.clear()
-        # Reset to the sentinel entries (index 0) regardless of language
-        self.category_combo.setCurrentIndex(0)
-        self.subcategory_combo.setCurrentIndex(0)
+        self.category_combo.setCurrentText("All Categories")
+        self.subcategory_combo.setCurrentText("All Subcategories")
         self.subcategory_combo.setEnabled(False)
         self._on_filters_changed()
     
