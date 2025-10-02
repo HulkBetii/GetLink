@@ -24,8 +24,8 @@ class ButtonDelegate(QStyledItemDelegate):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        # Make the CTA obvious: add an icon and keep text translatable
-        self.button_text = f"🔗  {tr('get_link')}"
+        # Keep text translatable; avoid emoji so it renders everywhere
+        self.button_text = tr('get_link')
         # Colors for normal / hover / pressed states
         self.color_normal = QColor("#007AFF")
         self.color_hover = QColor("#0056CC")

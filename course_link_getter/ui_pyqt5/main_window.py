@@ -287,11 +287,12 @@ class MainWindow(QMainWindow):
         self.copy_links_btn.setText(tr("copy_links"))
         self.export_csv_btn.setText(tr("export_csv"))
         
-        # Update table headers
+        # Update table headers (4 columns only)
         self.model.headers = [
-            tr("table_headers.title"), tr("table_headers.category"), 
-            tr("table_headers.subcategory"), tr("table_headers.provider"), 
-            tr("table_headers.tags"), tr("table_headers.actions")
+            tr("table_headers.title"),
+            tr("table_headers.category"),
+            tr("table_headers.subcategory"),
+            tr("table_headers.actions"),
         ]
         self.model.headerDataChanged.emit(Qt.Horizontal, 0, len(self.model.headers) - 1)
         
