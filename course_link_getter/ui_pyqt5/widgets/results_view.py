@@ -261,6 +261,49 @@ class ResultsView(QWidget):
             QPushButton:pressed {
                 background-color: #004499;
             }
+
+            /* Ultra-thin translucent scrollbars for table */
+            QScrollBar:vertical {
+                background: transparent;
+                width: 6px;
+                margin: 0;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(0, 0, 0, 0.25);
+                min-height: 40px;
+                border-radius: 3px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(0, 0, 0, 0.35);
+            }
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical,
+            QScrollBar::add-page:vertical,
+            QScrollBar::sub-page:vertical {
+                background: transparent;
+                height: 0px;
+            }
+
+            QScrollBar:horizontal {
+                background: transparent;
+                height: 6px;
+                margin: 0;
+            }
+            QScrollBar::handle:horizontal {
+                background: rgba(0, 0, 0, 0.25);
+                min-width: 40px;
+                border-radius: 3px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background: rgba(0, 0, 0, 0.35);
+            }
+            QScrollBar::add-line:horizontal,
+            QScrollBar::sub-line:horizontal,
+            QScrollBar::add-page:horizontal,
+            QScrollBar::sub-page:horizontal {
+                background: transparent;
+                width: 0px;
+            }
         """)
         
         # Results header
