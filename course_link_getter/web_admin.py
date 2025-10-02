@@ -55,27 +55,42 @@ def index():
     return render_template("index.html", courses=courses, categories=categories)
 
 
+def _next_id(existing: List[Dict[str, Any]]) -> str:
+    """Generate a simple auto-increment id like c-0001, c-0002."""
+    prefix = "c-"
+    max_num = 0
+    for c in existing:
+        cid = str(c.get("id", ""))
+        if cid.startswith(prefix):
+            try:
+                max_num = max(max_num, int(cid.split("-", 1)[1]))
+            except Exception:
+                continue
+    return f"{prefix}{max_num + 1:04d}"
+
+
 @app.route("/add", methods=["GET", "POST"])
 def add_course():
     data = load_catalog()
     categories = data.get("categories", [])
 
     if request.method == "POST":
-        course_id = request.form.get("id", "").strip()
+        # ID is auto-generated
         title_en = request.form.get("title_en", "").strip()
         category = request.form.get("category", "").strip()
         subcategory = request.form.get("subcategory", "").strip()
-        provider = request.form.get("provider", "").strip()
+        provider = request.form.get("provider", "").strip() or None
         link = request.form.get("link", "").strip()
-        tags = [t.strip() for t in request.form.get("tags", "").split(",") if t.strip()]
+        raw_tags = request.form.get("tags", "")
+        tags_list = [t.strip() for t in raw_tags.split(",") if t.strip()]
+        tags: Optional[List[str]] = tags_list if tags_list else None
 
-        if not course_id or not title_en or not category or not subcategory or not link:
-            flash("Please fill required fields (id, title, category, subcategory, link)", "danger")
+        if not title_en or not category or not subcategory or not link:
+            flash("Please fill required fields (title, category, subcategory, link)", "danger")
             return render_template("form.html", mode="add", categories=categories, values=request.form)
 
-        if get_course_by_id(data.get("courses", []), course_id):
-            flash("ID already exists", "danger")
-            return render_template("form.html", mode="add", categories=categories, values=request.form)
+        # Generate new id
+        course_id = _next_id(data.get("courses", []))
 
         new_course = {
             "id": course_id,
@@ -107,9 +122,11 @@ def edit_course(course_id: str):
         title_en = request.form.get("title_en", "").strip()
         category = request.form.get("category", "").strip()
         subcategory = request.form.get("subcategory", "").strip()
-        provider = request.form.get("provider", "").strip()
+        provider = request.form.get("provider", "").strip() or None
         link = request.form.get("link", "").strip()
-        tags = [t.strip() for t in request.form.get("tags", "").split(",") if t.strip()]
+        raw_tags = request.form.get("tags", "")
+        tags_list = [t.strip() for t in raw_tags.split(",") if t.strip()]
+        tags: Optional[List[str]] = tags_list if tags_list else None
 
         if not title_en or not category or not subcategory or not link:
             flash("Please fill required fields (title, category, subcategory, link)", "danger")

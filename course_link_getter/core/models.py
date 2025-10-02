@@ -14,9 +14,9 @@ class Course(BaseModel):
     title: Union[str, Dict[str, str]] = Field(..., description="Course title (string or multilingual dict)")
     category: str = Field(..., description="Main category name")
     subcategory: str = Field(..., description="Subcategory name")
-    provider: str = Field(..., description="Course provider/platform")
+    provider: Optional[str] = Field(default=None, description="Course provider/platform (optional)")
     link: str = Field(..., description="Course URL")
-    tags: Union[List[str], Dict[str, List[str]]] = Field(default_factory=list, description="Course tags (list or multilingual dict)")
+    tags: Optional[Union[List[str], Dict[str, List[str]]]] = Field(default=None, description="Course tags (list or multilingual dict, optional)")
     
     def get_title(self, language_code: str = "en") -> str:
         """Get course title in specified language."""
@@ -26,6 +26,8 @@ class Course(BaseModel):
     
     def get_tags(self, language_code: str = "en") -> List[str]:
         """Get course tags in specified language."""
+        if not self.tags:
+            return []
         if isinstance(self.tags, dict):
             return self.tags.get(language_code, self.tags.get("en", []))
         return self.tags
