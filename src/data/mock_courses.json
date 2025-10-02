@@ -1,0 +1,182 @@
+{
+  "categories": [
+    {
+      "name": "English",
+      "subcategories": ["IELTS", "TOEIC", "TOEFL", "General English", "Business English"]
+    },
+    {
+      "name": "Programming",
+      "subcategories": ["Python", "JavaScript", "Java", "C++", "Web Development"]
+    },
+    {
+      "name": "Design",
+      "subcategories": ["UI/UX", "Graphic Design", "Web Design", "3D Modeling", "Photography"]
+    },
+    {
+      "name": "Business",
+      "subcategories": ["Project Management", "Marketing", "Finance", "Leadership", "Entrepreneurship"]
+    },
+    {
+      "name": "Data Science",
+      "subcategories": ["Machine Learning", "Data Analysis", "Statistics", "Big Data", "AI"]
+    }
+  ],
+  "courses": [
+    {
+      "id": "eng-001",
+      "title": "IELTS Academic Preparation",
+      "description": "Complete preparation course for IELTS Academic exam covering all four skills",
+      "link": "https://example.com/ielts-academic-prep",
+      "category": "English",
+      "subcategory": "IELTS",
+      "duration": "8 weeks",
+      "level": "Intermediate",
+      "instructor": "Sarah Johnson",
+      "price": "$199",
+      "rating": 4.8
+    },
+    {
+      "id": "eng-002",
+      "title": "TOEIC Speaking & Writing",
+      "description": "Focused training for TOEIC Speaking and Writing sections",
+      "link": "https://example.com/toeic-speaking-writing",
+      "category": "English",
+      "subcategory": "TOEIC",
+      "duration": "6 weeks",
+      "level": "Intermediate",
+      "instructor": "Michael Chen",
+      "price": "$149",
+      "rating": 4.6
+    },
+    {
+      "id": "eng-003",
+      "title": "Business English Communication",
+      "description": "Professional English for workplace communication and presentations",
+      "link": "https://example.com/business-english",
+      "category": "English",
+      "subcategory": "Business English",
+      "duration": "4 weeks",
+      "level": "Advanced",
+      "instructor": "Emma Wilson",
+      "price": "$179",
+      "rating": 4.9
+    },
+    {
+      "id": "prog-001",
+      "title": "Python for Beginners",
+      "description": "Learn Python programming from scratch with hands-on projects",
+      "link": "https://example.com/python-beginners",
+      "category": "Programming",
+      "subcategory": "Python",
+      "duration": "10 weeks",
+      "level": "Beginner",
+      "instructor": "David Rodriguez",
+      "price": "$299",
+      "rating": 4.7
+    },
+    {
+      "id": "prog-002",
+      "title": "Advanced JavaScript ES6+",
+      "description": "Master modern JavaScript features and frameworks",
+      "link": "https://example.com/advanced-javascript",
+      "category": "Programming",
+      "subcategory": "JavaScript",
+      "duration": "8 weeks",
+      "level": "Advanced",
+      "instructor": "Lisa Park",
+      "price": "$249",
+      "rating": 4.8
+    },
+    {
+      "id": "prog-003",
+      "title": "Full-Stack Web Development",
+      "description": "Complete web development course covering frontend and backend",
+      "link": "https://example.com/fullstack-web-dev",
+      "category": "Programming",
+      "subcategory": "Web Development",
+      "duration": "16 weeks",
+      "level": "Intermediate",
+      "instructor": "Alex Thompson",
+      "price": "$599",
+      "rating": 4.9
+    },
+    {
+      "id": "design-001",
+      "title": "UI/UX Design Fundamentals",
+      "description": "Learn user interface and user experience design principles",
+      "link": "https://example.com/ui-ux-fundamentals",
+      "category": "Design",
+      "subcategory": "UI/UX",
+      "duration": "6 weeks",
+      "level": "Beginner",
+      "instructor": "Maria Garcia",
+      "price": "$199",
+      "rating": 4.6
+    },
+    {
+      "id": "design-002",
+      "title": "Adobe Photoshop Mastery",
+      "description": "Complete guide to professional photo editing and graphic design",
+      "link": "https://example.com/photoshop-mastery",
+      "category": "Design",
+      "subcategory": "Graphic Design",
+      "duration": "5 weeks",
+      "level": "Intermediate",
+      "instructor": "James Lee",
+      "price": "$149",
+      "rating": 4.5
+    },
+    {
+      "id": "biz-001",
+      "title": "Agile Project Management",
+      "description": "Learn agile methodologies and project management best practices",
+      "link": "https://example.com/agile-project-management",
+      "category": "Business",
+      "subcategory": "Project Management",
+      "duration": "4 weeks",
+      "level": "Intermediate",
+      "instructor": "Robert Kim",
+      "price": "$229",
+      "rating": 4.7
+    },
+    {
+      "id": "biz-002",
+      "title": "Digital Marketing Strategy",
+      "description": "Comprehensive digital marketing course covering all major channels",
+      "link": "https://example.com/digital-marketing-strategy",
+      "category": "Business",
+      "subcategory": "Marketing",
+      "duration": "6 weeks",
+      "level": "Intermediate",
+      "instructor": "Jennifer Brown",
+      "price": "$279",
+      "rating": 4.8
+    },
+    {
+      "id": "data-001",
+      "title": "Machine Learning with Python",
+      "description": "Hands-on machine learning course using Python and scikit-learn",
+      "link": "https://example.com/ml-python",
+      "category": "Data Science",
+      "subcategory": "Machine Learning",
+      "duration": "12 weeks",
+      "level": "Advanced",
+      "instructor": "Dr. Anna Smith",
+      "price": "$399",
+      "rating": 4.9
+    },
+    {
+      "id": "data-002",
+      "title": "Data Visualization with Tableau",
+      "description": "Create compelling data visualizations and dashboards",
+      "link": "https://example.com/tableau-visualization",
+      "category": "Data Science",
+      "subcategory": "Data Analysis",
+      "duration": "5 weeks",
+      "level": "Intermediate",
+      "instructor": "Carlos Martinez",
+      "price": "$199",
+      "rating": 4.6
+    }
+  ]
+}

@@ -1,0 +1,306 @@
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QTableView, QHeaderView,
+    QPushButton, QLabel, QAbstractItemView, QMessageBox, QMenu,
+    QToolTip, QApplication
+)
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSignal, QTimer
+from PyQt5.QtWidgets import QAction
+from PyQt5.QtGui import QKeySequence
+from typing import List, Optional
+import webbrowser
+import subprocess
+import sys
+from ...core.models import Course
+
+
+class CourseTableModel(QAbstractTableModel):
+    """Table model for displaying courses."""
+    
+    def __init__(self, courses: List[Course] = None):
+        super().__init__()
+        self.courses = courses or []
+        self.headers = [
+            "Title", "Category", "Subcategory", "Provider", "Tags", "Actions"
+        ]
+    
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        return len(self.courses)
+    
+    def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        return len(self.headers)
+    
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        
+        course = self.courses[index.row()]
+        col = index.column()
+        
+        if role == Qt.DisplayRole:
+            if col == 0:  # Title
+                return course.title
+            elif col == 1:  # Category
+                return course.category
+            elif col == 2:  # Subcategory
+                return course.subcategory
+            elif col == 3:  # Provider
+                return course.provider
+            elif col == 4:  # Tags
+                return ", ".join(course.tags) if course.tags else "N/A"
+            elif col == 5:  # Actions
+                return "Get Link"
+        elif role == Qt.ToolTipRole:
+            # Show full link in tooltip for better UX
+            if col == 3:  # Provider column - show full link
+                return course.link
+            elif col == 4:  # Tags column - show full tags
+                return ", ".join(course.tags) if course.tags else "No tags"
+        
+        return None
+    
+    def flags(self, index: QModelIndex):
+        """Return item flags."""
+        if not index.isValid():
+            return Qt.NoItemFlags
+        
+        # Make the Get Link column clickable
+        if index.column() == 5:  # Actions column
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+    
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole):
+        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+            return self.headers[section]
+        return None
+    
+    def set_courses(self, courses: List[Course]):
+        """Update the courses data."""
+        self.beginResetModel()
+        self.courses = courses
+        self.endResetModel()
+    
+    def get_course(self, row: int) -> Optional[Course]:
+        """Get course at specific row."""
+        if 0 <= row < len(self.courses):
+            return self.courses[row]
+        return None
+
+
+class ResultsView(QWidget):
+    """View for displaying course search results."""
+    
+    # Signals
+    course_link_requested = pyqtSignal(Course)
+    course_open_requested = pyqtSignal(Course)
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._setup_ui()
+        self._setup_context_menu()
+        self._setup_keyboard_shortcuts()
+        self._setup_feedback_timer()
+    
+    def _setup_ui(self):
+        """Setup the user interface."""
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        
+        # Results header
+        header_layout = QHBoxLayout()
+        self.results_label = QLabel("Results: 0 courses")
+        header_layout.addWidget(self.results_label)
+        header_layout.addStretch()
+        layout.addLayout(header_layout)
+        
+        # Table view
+        self.table_view = QTableView()
+        self.table_view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table_view.setAlternatingRowColors(True)
+        self.table_view.setSortingEnabled(True)
+        
+        # Enable multi-selection for "Open Selected" functionality
+        self.table_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        
+        # Set up the model
+        self.model = CourseTableModel()
+        self.table_view.setModel(self.model)
+        
+        # Configure columns
+        header = self.table_view.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)  # Title - stretches to fill space
+        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Category
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Subcategory
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Provider
+        header.setSectionResizeMode(4, QHeaderView.Stretch)  # Tags - stretches
+        header.setSectionResizeMode(5, QHeaderView.ResizeToContents)  # Actions
+        
+        # Set minimum widths for better UX
+        header.setMinimumSectionSize(80)
+        
+        # Enable sorting by clicking headers
+        header.setSortIndicatorShown(True)
+        
+        # Connect signals
+        self.table_view.doubleClicked.connect(self._on_double_clicked)
+        self.table_view.clicked.connect(self._on_cell_clicked)
+        self.table_view.customContextMenuRequested.connect(self._show_context_menu)
+        
+        # Enable context menu
+        self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        
+        layout.addWidget(self.table_view)
+    
+    def set_courses(self, courses: List[Course]):
+        """Set the courses to display."""
+        self.model.set_courses(courses)
+        self.results_label.setText(f"Results: {len(courses)} courses")
+    
+    def _on_double_clicked(self, index: QModelIndex):
+        """Handle double-click on table row."""
+        course = self.model.get_course(index.row())
+        if course:
+            self.course_link_requested.emit(course)
+    
+    def get_selected_courses(self) -> List[Course]:
+        """Get currently selected courses."""
+        selected_courses = []
+        selection = self.table_view.selectionModel()
+        if selection:
+            for index in selection.selectedRows():
+                course = self.model.get_course(index.row())
+                if course:
+                    selected_courses.append(course)
+        return selected_courses
+    
+    def get_all_visible_courses(self) -> List[Course]:
+        """Get all currently visible courses."""
+        return self.model.courses.copy()
+    
+    def _setup_context_menu(self):
+        """Setup context menu for table rows."""
+        self.context_menu = QMenu(self)
+        
+        # Copy Link action
+        self.copy_action = QAction("Copy Link", self)
+        self.copy_action.setShortcut(QKeySequence.Copy)
+        self.copy_action.triggered.connect(self._copy_selected_link)
+        self.context_menu.addAction(self.copy_action)
+        
+        # Open Link action
+        self.open_action = QAction("Open Link in Browser", self)
+        self.open_action.setShortcut(QKeySequence("Ctrl+O"))
+        self.open_action.triggered.connect(self._open_selected_link)
+        self.context_menu.addAction(self.open_action)
+    
+    def _setup_keyboard_shortcuts(self):
+        """Setup keyboard shortcuts."""
+        # Ctrl+C for copy
+        copy_shortcut = QAction(self)
+        copy_shortcut.setShortcut(QKeySequence.Copy)
+        copy_shortcut.triggered.connect(self._copy_selected_link)
+        self.addAction(copy_shortcut)
+        
+        # Ctrl+O for open
+        open_shortcut = QAction(self)
+        open_shortcut.setShortcut(QKeySequence("Ctrl+O"))
+        open_shortcut.triggered.connect(self._open_selected_link)
+        self.addAction(open_shortcut)
+    
+    def _setup_feedback_timer(self):
+        """Setup timer for user feedback messages."""
+        self.feedback_timer = QTimer()
+        self.feedback_timer.setSingleShot(True)
+        self.feedback_timer.timeout.connect(self._hide_feedback)
+        self.feedback_message = None
+    
+    def _on_cell_clicked(self, index: QModelIndex):
+        """Handle cell click - if it's the Get Link column, copy the link."""
+        if index.column() == 5:  # Actions column
+            course = self.model.get_course(index.row())
+            if course:
+                self._copy_course_link(course)
+    
+    def _on_double_clicked(self, index: QModelIndex):
+        """Handle double-click on table row."""
+        course = self.model.get_course(index.row())
+        if course:
+            self._copy_course_link(course)
+    
+    def _show_context_menu(self, position):
+        """Show context menu at the given position."""
+        index = self.table_view.indexAt(position)
+        if index.isValid():
+            course = self.model.get_course(index.row())
+            if course:
+                # Update action text with course title
+                self.copy_action.setText(f"Copy Link: {course.title[:30]}...")
+                self.open_action.setText(f"Open Link: {course.title[:30]}...")
+                
+                # Show context menu
+                self.context_menu.exec_(self.table_view.mapToGlobal(position))
+    
+    def _copy_selected_link(self):
+        """Copy link of the currently selected row."""
+        selection = self.table_view.selectionModel()
+        if selection and selection.hasSelection():
+            index = selection.currentIndex()
+            course = self.model.get_course(index.row())
+            if course:
+                self._copy_course_link(course)
+    
+    def _open_selected_link(self):
+        """Open link of the currently selected row in browser."""
+        selection = self.table_view.selectionModel()
+        if selection and selection.hasSelection():
+            index = selection.currentIndex()
+            course = self.model.get_course(index.row())
+            if course:
+                self._open_course_link(course)
+    
+    def _copy_course_link(self, course: Course):
+        """Copy a course link to clipboard with feedback."""
+        if self._copy_to_clipboard(course.link):
+            self._show_feedback(f"Copied: {course.title[:30]}...")
+            self.course_link_requested.emit(course)
+        else:
+            self._show_feedback("Failed to copy link", is_error=True)
+    
+    def _open_course_link(self, course: Course):
+        """Open a course link in browser with feedback."""
+        try:
+            webbrowser.open(course.link)
+            self._show_feedback(f"Opened: {course.title[:30]}...")
+            self.course_open_requested.emit(course)
+        except Exception as e:
+            self._show_feedback(f"Failed to open link: {str(e)}", is_error=True)
+    
+    def _copy_to_clipboard(self, text: str) -> bool:
+        """Copy text to system clipboard."""
+        try:
+            if sys.platform == "darwin":  # macOS
+                subprocess.run(["pbcopy"], input=text, text=True, check=True)
+            elif sys.platform == "win32":  # Windows
+                subprocess.run(["clip"], input=text, text=True, check=True)
+            else:  # Linux
+                subprocess.run(["xclip", "-selection", "clipboard"], input=text, text=True, check=True)
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return False
+    
+    def _show_feedback(self, message: str, is_error: bool = False):
+        """Show non-blocking feedback message."""
+        # Hide previous message
+        self._hide_feedback()
+        
+        # Show tooltip as feedback
+        pos = self.mapToGlobal(self.rect().bottomLeft())
+        QToolTip.showText(pos, message, self, self.rect(), 3000)  # 3 second timeout
+        
+        # Also update status if available
+        if hasattr(self.parent(), 'statusBar'):
+            self.parent().statusBar().showMessage(message, 3000)
+    
+    def _hide_feedback(self):
+        """Hide feedback message."""
+        QToolTip.hideText()
