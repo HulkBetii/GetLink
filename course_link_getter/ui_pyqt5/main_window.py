@@ -348,18 +348,31 @@ class MainWindow(QMainWindow):
         super().resizeEvent(event)
 
     def _apply_results_column_layout(self):
-        """Divide width: 1/2 for Title, remaining 1/2 split equally for Category, Subcategory, Actions."""
+        """Divide width: Title = 1/2; remaining 1/2 split into 5 parts where
+        Category = 2 parts, Subcategory = 2 parts, Actions = 1 part.
+        Resulting ratios: Title 50%, Category 20%, Subcategory 20%, Actions 10%.
+        """
         try:
+            if not hasattr(self, 'table_view') or self.table_view is None:
+                return
             viewport_width = self.table_view.viewport().width()
             if viewport_width <= 0:
                 return
-            half = max(0, viewport_width // 2)
-            remainder = max(0, viewport_width - half)
-            third = max(0, remainder // 3)
-            self.table_view.setColumnWidth(0, half)
-            self.table_view.setColumnWidth(1, third)
-            self.table_view.setColumnWidth(2, third)
-            self.table_view.setColumnWidth(3, third)
+            total = viewport_width
+            title_w = max(0, total // 2)
+            remaining = max(0, total - title_w)
+            if remaining <= 0:
+                # Fallback: make title occupy all
+                self.table_view.setColumnWidth(0, total)
+                return
+            unit = remaining // 5
+            category_w = unit * 2
+            subcat_w = unit * 2
+            actions_w = remaining - category_w - subcat_w
+            self.table_view.setColumnWidth(0, title_w)
+            self.table_view.setColumnWidth(1, category_w)
+            self.table_view.setColumnWidth(2, subcat_w)
+            self.table_view.setColumnWidth(3, actions_w)
         except Exception:
             pass
     
@@ -900,7 +913,7 @@ class MainWindow(QMainWindow):
         
         # Configure columns
         header = self.table_view.horizontalHeader()
-        # Use interactive sizing; apply proportional widths below
+        # Use interactive sizing and maintain proportions manually
         header.setSectionResizeMode(0, QHeaderView.Interactive)  # Title
         header.setSectionResizeMode(1, QHeaderView.Interactive)  # Category
         header.setSectionResizeMode(2, QHeaderView.Interactive)  # Subcategory
