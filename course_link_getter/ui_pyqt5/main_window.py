@@ -342,7 +342,26 @@ class MainWindow(QMainWindow):
             x = parent_rect.x() + (parent_rect.width() - self.notification.width()) // 2
             y = parent_rect.y() + 50
             self.notification.move(x, y)
+        # Keep results table column proportions on resize
+        if hasattr(self, 'table_view'):
+            self._apply_results_column_layout()
         super().resizeEvent(event)
+
+    def _apply_results_column_layout(self):
+        """Divide width: 1/2 for Title, remaining 1/2 split equally for Category, Subcategory, Actions."""
+        try:
+            viewport_width = self.table_view.viewport().width()
+            if viewport_width <= 0:
+                return
+            half = max(0, viewport_width // 2)
+            remainder = max(0, viewport_width - half)
+            third = max(0, remainder // 3)
+            self.table_view.setColumnWidth(0, half)
+            self.table_view.setColumnWidth(1, third)
+            self.table_view.setColumnWidth(2, third)
+            self.table_view.setColumnWidth(3, third)
+        except Exception:
+            pass
     
     def _apply_theme(self):
         """Apply modern white theme to the application."""
@@ -881,10 +900,11 @@ class MainWindow(QMainWindow):
         
         # Configure columns
         header = self.table_view.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.Stretch)  # Title
-        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Category
-        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Subcategory
-        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Action
+        # Use interactive sizing; apply proportional widths below
+        header.setSectionResizeMode(0, QHeaderView.Interactive)  # Title
+        header.setSectionResizeMode(1, QHeaderView.Interactive)  # Category
+        header.setSectionResizeMode(2, QHeaderView.Interactive)  # Subcategory
+        header.setSectionResizeMode(3, QHeaderView.Interactive)  # Action
         
         # Enable sorting and selection
         self.table_view.setSortingEnabled(True)
@@ -893,6 +913,9 @@ class MainWindow(QMainWindow):
         self.table_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
         
         results_layout.addWidget(self.table_view)
+        
+        # Apply initial proportional layout after the view is shown
+        QTimer.singleShot(0, self._apply_results_column_layout)
         
         # Apply RTL support to results widget
         if self.translation_manager:
