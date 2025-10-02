@@ -83,7 +83,9 @@ def add_course():
         link = request.form.get("link", "").strip()
         raw_tags = request.form.get("tags", "")
         tags_list = [t.strip() for t in raw_tags.split(",") if t.strip()]
-        tags: Optional[List[str]] = tags_list if tags_list else None
+        if not tags_list:
+            tags_list = ["en", "vi", "es", "de", "it", "pt", "ja", "ko", "zh", "fr"]
+        tags: Optional[List[str]] = tags_list
 
         if not title_en or not category or not subcategory or not link:
             flash("Please fill required fields (title, category, subcategory, link)", "danger")
