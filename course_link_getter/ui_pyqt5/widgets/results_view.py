@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSignal, QTimer, QRect, QSize
 from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QKeySequence, QPainter, QFontMetrics
+from PyQt5.QtGui import QKeySequence, QPainter, QFontMetrics, QColor, QPen
 from typing import List, Optional
 import webbrowser
 import subprocess
@@ -24,30 +24,49 @@ class ButtonDelegate(QStyledItemDelegate):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.button_text = tr("get_link")
+        # Make the CTA obvious: add an icon and keep text translatable
+        self.button_text = f"🔗  {tr('get_link')}"
+        # Colors for normal / hover / pressed states
+        self.color_normal = QColor("#007AFF")
+        self.color_hover = QColor("#0056CC")
+        self.color_pressed = QColor("#004499")
     
     def paint(self, painter, option, index):
-        """Paint the button in the cell."""
-        if index.column() == 5:  # Actions column
-            # Create button style option
-            button_option = QStyleOptionButton()
-            button_option.rect = option.rect.adjusted(4, 4, -4, -4)  # Add some padding
-            button_option.text = self.button_text
-            button_option.state = QStyle.State_Enabled
-            
-            # Check if mouse is over this cell
-            if option.state & QStyle.State_MouseOver:
-                button_option.state |= QStyle.State_MouseOver
-            
-            # Draw the button
-            QApplication.style().drawControl(QStyle.CE_PushButton, button_option, painter)
-        else:
-            # For other columns, use default painting
-            super().paint(painter, option, index)
+        """Paint a prominent CTA button in the cell."""
+        if index.column() == 3:  # Actions column
+            rect = option.rect.adjusted(4, 4, -4, -4)
+            painter.save()
+            painter.setRenderHint(QPainter.Antialiasing, True)
+
+            # Determine background color based on state
+            bg = self.color_normal
+            if option.state & QStyle.State_Sunken:
+                bg = self.color_pressed
+            elif option.state & QStyle.State_MouseOver:
+                bg = self.color_hover
+
+            # Draw rounded rectangle background
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(bg)
+            radius = 6
+            painter.drawRoundedRect(rect, radius, radius)
+
+            # Draw text (white, bold)
+            pen = QPen(QColor("#FFFFFF"))
+            painter.setPen(pen)
+            font = option.font
+            font.setBold(True)
+            painter.setFont(font)
+            painter.drawText(rect, Qt.AlignCenter, self.button_text)
+            painter.restore()
+            return
+        
+        # For other columns, use default painting
+        super().paint(painter, option, index)
     
     def editorEvent(self, event, model, option, index):
         """Handle mouse events on the button."""
-        if index.column() == 5:  # Actions column
+        if index.column() == 3:  # Actions column
             if event.type() == event.MouseButtonPress:
                 if event.button() == Qt.LeftButton:
                     # Check if click is within button bounds
@@ -59,11 +78,14 @@ class ButtonDelegate(QStyledItemDelegate):
     
     def sizeHint(self, option, index):
         """Return the size hint for the button."""
-        if index.column() == 5:  # Actions column
-            metrics = QFontMetrics(option.font)
+        if index.column() == 3:  # Actions column
+            # Make the CTA a bit larger for visibility
+            font = option.font
+            font.setBold(True)
+            metrics = QFontMetrics(font)
             text_size = metrics.size(Qt.TextSingleLine, self.button_text)
-            # Add padding for button appearance
-            return text_size + QSize(16, 8)  # 8px horizontal, 4px vertical padding
+            # Add generous padding for tap targets
+            return text_size + QSize(28, 12)  # wider and taller
         return super().sizeHint(option, index)
 
 
@@ -73,10 +95,12 @@ class CourseTableModel(QAbstractTableModel):
     def __init__(self, courses: List[Course] = None):
         super().__init__()
         self.courses = courses or []
+        # Remove Provider and Tags columns
         self.headers = [
-            tr("table_headers.title"), tr("table_headers.category"), 
-            tr("table_headers.subcategory"), tr("table_headers.provider"), 
-            tr("table_headers.tags"), tr("table_headers.actions")
+            tr("table_headers.title"),
+            tr("table_headers.category"),
+            tr("table_headers.subcategory"),
+            tr("table_headers.actions"),
         ]
     
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -109,20 +133,12 @@ class CourseTableModel(QAbstractTableModel):
                 return course.category
             elif col == 2:  # Subcategory
                 return course.subcategory
-            elif col == 3:  # Provider
-                return course.provider
-            elif col == 4:  # Tags
-                tags = course.get_tags(current_language)
-                return ", ".join(tags) if tags else "N/A"
-            elif col == 5:  # Actions
+            elif col == 3:  # Actions
                 return ""  # Empty text, button delegate will handle display
         elif role == Qt.ToolTipRole:
-            # Show full link in tooltip for better UX
-            if col == 3:  # Provider column - show full link
-                return course.link
-            elif col == 4:  # Tags column - show full tags
-                tags = course.get_tags(current_language)
-                return ", ".join(tags) if tags else "No tags"
+            # Provide helpful tooltip on the action column
+            if col == 3:
+                return tr("menu_copy_link")
         
         return None
     
@@ -132,7 +148,7 @@ class CourseTableModel(QAbstractTableModel):
             return Qt.NoItemFlags
         
         # Make the Get Link column clickable
-        if index.column() == 5:  # Actions column
+        if index.column() == 3:  # Actions column
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
         
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable
@@ -269,7 +285,7 @@ class ResultsView(QWidget):
         
         # Set up button delegate for Actions column
         self.button_delegate = ButtonDelegate(self)
-        self.table_view.setItemDelegateForColumn(5, self.button_delegate)
+        self.table_view.setItemDelegateForColumn(3, self.button_delegate)
         self.button_delegate.button_clicked.connect(self._on_button_clicked)
         
         # Configure columns
@@ -277,9 +293,7 @@ class ResultsView(QWidget):
         header.setSectionResizeMode(0, QHeaderView.Stretch)  # Title - stretches to fill space
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Category
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Subcategory
-        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Provider
-        header.setSectionResizeMode(4, QHeaderView.Stretch)  # Tags - stretches
-        header.setSectionResizeMode(5, QHeaderView.ResizeToContents)  # Actions
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Actions
         
         # Set minimum widths for better UX
         header.setMinimumSectionSize(80)
@@ -368,7 +382,7 @@ class ResultsView(QWidget):
     
     def _on_cell_clicked(self, index: QModelIndex):
         """Handle cell click - if it's the Get Link column, copy the link."""
-        if index.column() == 5:  # Actions column
+        if index.column() == 3:  # Actions column
             course = self.model.get_course(index.row())
             if course:
                 self._copy_course_link(course)

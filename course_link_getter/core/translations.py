@@ -68,8 +68,7 @@ class TranslationManager(QObject):
                     "title": "Title",
                     "category": "Category", 
                     "subcategory": "Subcategory",
-                    "provider": "Provider",
-                    "tags": "Tags",
+                    
                     "actions": "Actions"
                 },
                 "menu_file": "File",

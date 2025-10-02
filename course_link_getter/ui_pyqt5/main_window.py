@@ -875,7 +875,8 @@ class MainWindow(QMainWindow):
         
         # Set up button delegate for Actions column
         self.button_delegate = ButtonDelegate(self)
-        self.table_view.setItemDelegateForColumn(5, self.button_delegate)
+        # Actions column index is 3 after removing Provider/Tags
+        self.table_view.setItemDelegateForColumn(3, self.button_delegate)
         self.button_delegate.button_clicked.connect(self._on_button_clicked)
         
         # Configure columns
@@ -883,9 +884,7 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(0, QHeaderView.Stretch)  # Title
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Category
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Subcategory
-        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Provider
-        header.setSectionResizeMode(4, QHeaderView.Stretch)  # Tags
-        header.setSectionResizeMode(5, QHeaderView.ResizeToContents)  # Action
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Action
         
         # Enable sorting and selection
         self.table_view.setSortingEnabled(True)
