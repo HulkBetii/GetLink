@@ -1,6 +1,6 @@
 # Course Link Getter
 
-A desktop application for managing and searching course catalogs with advanced filtering, clipboard integration, and export capabilities.
+A desktop application for managing and searching course catalogs with advanced filtering, clipboard integration, export capabilities, and comprehensive multilingual support.
 
 ## 🎓 Features
 
@@ -12,11 +12,21 @@ A desktop application for managing and searching course catalogs with advanced f
 - **Export Capabilities**: Export filtered results to CSV
 - **Popup Notifications**: Animated success notifications when copying links
 
+### 🌍 Multilingual Support
+- **10 Languages**: English, Spanish, German, Italian, Portuguese, French, Japanese, Korean, Chinese, Vietnamese
+- **RTL Languages**: Full support for Arabic and Hebrew with right-to-left layouts
+- **Automatic Detection**: System language detection and auto-selection
+- **Real-time Switching**: Change languages without app restart
+- **Localized Content**: Course titles and tags in multiple languages
+- **Persistent Preferences**: Language choice saved across sessions
+
 ### User Interface
-- **Desktop App**: PyQt5-based native desktop application
+- **Desktop App**: PyQt5-based native desktop application with RTL support
 - **Web Interface**: Browser-based alternative using Python HTTP server
 - **Interactive CLI**: Command-line interface for quick access
 - **Settings Persistence**: Automatic saving and restoration of user preferences
+- **Language Selector**: Intuitive language switching with flag icons
+- **RTL Layouts**: Proper right-to-left layouts for Arabic and Hebrew
 
 ### Technical Features
 - **Cross-platform**: Works on macOS, Windows, and Linux
@@ -45,8 +55,12 @@ A desktop application for managing and searching course catalogs with advanced f
 
 3. **Run the application:**
    ```bash
-   # Desktop app (PyQt5)
+   # Desktop app (PyQt5) - Recommended
+   python launch_pyqt5.py
+   
+   # Alternative launchers
    python app_pyqt5.py
+   python app.py
    
    # Web interface
    python web_app.py
@@ -58,11 +72,13 @@ A desktop application for managing and searching course catalogs with advanced f
 ## 📱 User Interfaces
 
 ### 1. Desktop Application (PyQt5)
-- Native desktop experience
-- Advanced filtering panel
-- Sortable table view
+- Native desktop experience with multilingual support
+- Advanced filtering panel with RTL layouts
+- Sortable table view with localized headers
 - Context menus and keyboard shortcuts
-- Settings persistence
+- Settings persistence and language preferences
+- Language selector with flag icons
+- RTL support for Arabic and Hebrew
 
 ### 2. Web Interface
 - Browser-based interface
@@ -82,16 +98,34 @@ A desktop application for managing and searching course catalogs with advanced f
 ```
 course_link_getter/
 ├── core/                    # Core business logic
-│   ├── models.py           # Pydantic data models
+│   ├── models.py           # Pydantic data models with multilingual support
 │   ├── store.py            # CatalogStore for data management
-│   └── settings.py         # Settings persistence
+│   ├── settings.py         # Settings persistence
+│   ├── translations.py     # Translation system with RTL support
+│   └── translations/       # Language translation files
+│       ├── en.json         # English (default)
+│       ├── ar.json         # Arabic (RTL)
+│       ├── he.json         # Hebrew (RTL)
+│       ├── es.json         # Spanish
+│       ├── de.json         # German
+│       ├── it.json         # Italian
+│       ├── pt.json         # Portuguese
+│       ├── fr.json         # French
+│       ├── ja.json         # Japanese
+│       ├── ko.json         # Korean
+│       ├── zh.json         # Chinese
+│       └── vi.json         # Vietnamese
 ├── ui_pyqt5/               # PyQt5 desktop UI
-│   ├── main_window.py      # Main application window
+│   ├── main_window.py      # Main application window with RTL support
 │   └── widgets/           # UI components
+│       ├── language_selector.py  # Language selection widget
+│       ├── rtl_helper.py   # RTL support utilities
+│       └── results_view.py # Multilingual table view
 ├── tests/                  # Test suite
 │   └── test_store.py       # Comprehensive pytest tests
 ├── assets/                 # Sample data
-│   └── catalog.sample.json # Course catalog
+│   ├── catalog.sample.json # Legacy course catalog
+│   └── catalog.multilingual.json # Multilingual course catalog
 └── requirements.txt        # Dependencies
 ```
 
@@ -125,6 +159,43 @@ The project includes GitHub Actions workflows:
 - Comprehensive tags and metadata
 - Real-world course examples
 
+### 🌍 Multilingual Data
+- **Multilingual Catalog**: Course titles and tags in 10 languages
+- **RTL Support**: Arabic and Hebrew course content
+- **Backward Compatibility**: Legacy single-language catalogs supported
+- **Dynamic Loading**: Language-specific data loading
+- **Fallback System**: English fallback for missing translations
+
+## 🌍 Multilingual Features
+
+### Supported Languages
+- **🇺🇸 English** (Default)
+- **🇪🇸 Spanish** (Español)
+- **🇩🇪 German** (Deutsch)
+- **🇮🇹 Italian** (Italiano)
+- **🇵🇹 Portuguese** (Português)
+- **🇫🇷 French** (Français)
+- **🇯🇵 Japanese** (日本語)
+- **🇰🇷 Korean** (한국어)
+- **🇨🇳 Chinese** (中文)
+- **🇻🇳 Vietnamese** (Tiếng Việt)
+- **🇸🇦 Arabic** (العربية) - RTL
+- **🇮🇱 Hebrew** (עברית) - RTL
+
+### Language Features
+- **Automatic Detection**: Detects system language on first run
+- **Real-time Switching**: Change languages without restarting
+- **RTL Support**: Full right-to-left layout for Arabic and Hebrew
+- **Localized Content**: Course titles and tags in native languages
+- **Persistent Preferences**: Language choice saved across sessions
+- **Fallback System**: English fallback for missing translations
+
+### RTL Language Support
+- **Automatic Layout**: RTL layouts applied automatically
+- **Text Direction**: Proper right-to-left text alignment
+- **UI Positioning**: RTL-aware notification and widget positioning
+- **Reading Flow**: Natural reading experience for RTL languages
+
 ## 🛠️ Configuration
 
 ### Settings Persistence
@@ -132,6 +203,8 @@ The project includes GitHub Actions workflows:
 - Cross-platform data directory using `platformdirs`
 - Filter states restored on startup
 - Window size and position remembered
+- Language preferences persisted across sessions
+- RTL layout preferences maintained
 
 ### Export Options
 - **CSV Export**: title, category, subcategory, provider, link
@@ -203,6 +276,11 @@ This project is open source and available under the MIT License.
 - [ ] Mobile app version
 
 ### Recent Updates
+- ✅ **Multilingual Support**: 10 languages with complete UI translations
+- ✅ **RTL Language Support**: Arabic and Hebrew with right-to-left layouts
+- ✅ **Translation System**: Robust fallback handling and pluralization
+- ✅ **Language Detection**: Automatic system language detection
+- ✅ **Multilingual Data**: Course titles and tags in multiple languages
 - ✅ Settings persistence implementation
 - ✅ Comprehensive test suite
 - ✅ CI/CD pipeline setup
