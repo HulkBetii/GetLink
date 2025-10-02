@@ -304,6 +304,16 @@ class ResultsView(QWidget):
                 background: transparent;
                 width: 0px;
             }
+
+            /* Smaller tooltip styling for compact messages */
+            QToolTip {
+                background-color: #333333;
+                color: #FFFFFF;
+                border: none;
+                border-radius: 6px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }
         """)
         
         # Results header
@@ -470,7 +480,7 @@ class ResultsView(QWidget):
     def _copy_course_link(self, course: Course):
         """Copy a course link to clipboard with feedback."""
         if self._copy_to_clipboard(course.link):
-            self._show_feedback(f"Copied: {course.title[:30]}...")
+            self._show_feedback("Copied")
             self.course_link_requested.emit(course)
         else:
             self._show_feedback("Failed to copy link", is_error=True)
@@ -479,7 +489,7 @@ class ResultsView(QWidget):
         """Open a course link in browser with feedback."""
         try:
             webbrowser.open(course.link)
-            self._show_feedback(f"Opened: {course.title[:30]}...")
+            self._show_feedback("Opened")
             self.course_open_requested.emit(course)
         except Exception as e:
             self._show_feedback(f"Failed to open link: {str(e)}", is_error=True)
