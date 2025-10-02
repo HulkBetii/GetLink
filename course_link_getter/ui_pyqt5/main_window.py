@@ -29,15 +29,16 @@ class NotificationWidget(QWidget):
         super().__init__(parent)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setFixedSize(300, 60)
+        self.setFixedSize(400, 80)
         
         # Create main container
         self.container = QWidget()
         self.container.setStyleSheet("""
             QWidget {
                 background-color: #4CAF50;
-                border-radius: 8px;
-                border: 1px solid #45a049;
+                border-radius: 12px;
+                border: 2px solid #45a049;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             }
         """)
         
@@ -50,7 +51,7 @@ class NotificationWidget(QWidget):
         self.icon_label.setStyleSheet("""
             QLabel {
                 color: white;
-                font-size: 18px;
+                font-size: 24px;
                 font-weight: bold;
             }
         """)
@@ -61,8 +62,8 @@ class NotificationWidget(QWidget):
         self.message_label.setStyleSheet("""
             QLabel {
                 color: white;
-                font-size: 14px;
-                font-weight: 500;
+                font-size: 16px;
+                font-weight: 600;
             }
         """)
         layout.addWidget(self.message_label)
@@ -101,11 +102,12 @@ class NotificationWidget(QWidget):
         """Show the notification with a custom message."""
         self.message_label.setText(message)
         
-        # Position at top-right of parent
+        # Position at center-top of parent window
         if self.parent():
             parent_rect = self.parent().geometry()
-            x = parent_rect.x() + parent_rect.width() - self.width() - 20
-            y = parent_rect.y() + 20
+            # Center horizontally, position near top
+            x = parent_rect.x() + (parent_rect.width() - self.width()) // 2
+            y = parent_rect.y() + 50  # 50px from top
             self.move(x, y)
         
         # Show and animate
@@ -116,8 +118,8 @@ class NotificationWidget(QWidget):
         # Start fade in animation
         self.fade_in_animation.start()
         
-        # Auto-hide after 2 seconds
-        self.hide_timer.start(2000)
+        # Auto-hide after 4 seconds (longer visibility)
+        self.hide_timer.start(4000)
     
     def hide_notification(self):
         """Hide the notification with fade out animation."""
@@ -141,6 +143,30 @@ class MainWindow(QMainWindow):
         
         # Create notification widget
         self.notification = NotificationWidget(self)
+        
+        # Connect window events to reposition notification
+        self.moveEvent = self._on_window_move
+        self.resizeEvent = self._on_window_resize
+    
+    def _on_window_move(self, event):
+        """Handle window move event to reposition notification."""
+        if hasattr(self, 'notification') and self.notification.isVisible():
+            # Reposition notification when window moves
+            parent_rect = self.geometry()
+            x = parent_rect.x() + (parent_rect.width() - self.notification.width()) // 2
+            y = parent_rect.y() + 50
+            self.notification.move(x, y)
+        super().moveEvent(event)
+    
+    def _on_window_resize(self, event):
+        """Handle window resize event to reposition notification."""
+        if hasattr(self, 'notification') and self.notification.isVisible():
+            # Reposition notification when window resizes
+            parent_rect = self.geometry()
+            x = parent_rect.x() + (parent_rect.width() - self.notification.width()) // 2
+            y = parent_rect.y() + 50
+            self.notification.move(x, y)
+        super().resizeEvent(event)
     
     def _apply_theme(self):
         """Apply modern white theme to the application."""
@@ -688,7 +714,8 @@ class MainWindow(QMainWindow):
         self.export_csv_btn.clicked.connect(self._export_to_csv)
         self.copy_links_btn.clicked.connect(self._copy_all_links)
         
-        # Table view signals (buttons handle clicks now)
+        # Table view signals
+        self.table_view.clicked.connect(self._on_table_clicked)
         
         # Load initial data into the UI
         self._load_categories()
@@ -737,6 +764,13 @@ class MainWindow(QMainWindow):
     def _on_subcategory_changed(self, subcategory_name):
         """Handle subcategory selection change."""
         self._on_filters_changed()
+    
+    def _on_table_clicked(self, index):
+        """Handle table cell click."""
+        if index.column() == 5:  # Action column
+            course = self.model.get_course(index.row())
+            if course:
+                self._copy_course_link(course)
     
     def _load_initial_data(self):
         """Load initial data and populate the interface."""
