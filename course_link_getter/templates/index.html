@@ -19,6 +19,7 @@
       {% for c in courses %}
       {% set tdict = (c.titles if c.titles is defined else (c.title if c.title is defined else None)) %}
       {% set ten = (tdict.en if tdict is mapping else (tdict if tdict is string else '')) %}
+      {% set ttags = (c.tags.en if c.tags is mapping else (c.tags if c.tags is defined else [])) %}
       <tr>
         <td>{{ c.id }}</td>
         <td>{{ ten }}</td>
@@ -26,7 +27,7 @@
         <td>{{ c.subcategory }}</td>
         <td>{{ c.provider }}</td>
         <td><a href="{{ c.link }}" target="_blank">open</a></td>
-        <td>{{ ", ".join(c.tags or []) }}</td>
+        <td>{{ ", ".join(ttags or []) }}</td>
         <td>
           <a class="btn secondary" href="{{ url_for('edit_course', course_id=c.id) }}">Edit</a>
           <form method="post" action="{{ url_for('delete_course', course_id=c.id) }}" style="display:inline;" onsubmit="return confirm('Delete this course?');">
