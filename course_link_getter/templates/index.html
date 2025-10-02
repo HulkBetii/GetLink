@@ -17,9 +17,11 @@
     </thead>
     <tbody>
       {% for c in courses %}
+      {% set tdict = (c.titles if c.titles is defined else (c.title if c.title is defined else None)) %}
+      {% set ten = (tdict.en if tdict is mapping else (tdict if tdict is string else '')) %}
       <tr>
         <td>{{ c.id }}</td>
-        <td>{{ (c.title.en if c.title is mapping else c.title) | default('') }}</td>
+        <td>{{ ten }}</td>
         <td>{{ c.category }}</td>
         <td>{{ c.subcategory }}</td>
         <td>{{ c.provider }}</td>
