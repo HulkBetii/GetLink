@@ -1,12 +1,12 @@
 from PyQt5.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, 
+    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QSplitter, QMessageBox, QFileDialog, QApplication,
     QLabel, QLineEdit, QComboBox, QPushButton, QTableView,
-    QAbstractItemView, QHeaderView
+    QAbstractItemView, QHeaderView, QGraphicsOpacityEffect
 )
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, pyqtProperty
 from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QFont
 from typing import List
 import sys
 import subprocess
@@ -22,6 +22,109 @@ from core.models import Course
 from core.settings import SettingsManager
 
 
+class NotificationWidget(QWidget):
+    """Custom notification widget for showing copy success messages."""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setFixedSize(300, 60)
+        
+        # Create main container
+        self.container = QWidget()
+        self.container.setStyleSheet("""
+            QWidget {
+                background-color: #4CAF50;
+                border-radius: 8px;
+                border: 1px solid #45a049;
+            }
+        """)
+        
+        # Layout
+        layout = QHBoxLayout(self.container)
+        layout.setContentsMargins(15, 10, 15, 10)
+        
+        # Icon
+        self.icon_label = QLabel("✓")
+        self.icon_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 18px;
+                font-weight: bold;
+            }
+        """)
+        layout.addWidget(self.icon_label)
+        
+        # Message
+        self.message_label = QLabel("Copied to clipboard!")
+        self.message_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 14px;
+                font-weight: 500;
+            }
+        """)
+        layout.addWidget(self.message_label)
+        
+        # Main layout
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addWidget(self.container)
+        
+        # Animation setup
+        self.opacity_effect = QGraphicsOpacityEffect()
+        self.setGraphicsEffect(self.opacity_effect)
+        
+        self.fade_in_animation = QPropertyAnimation(self.opacity_effect, b"opacity")
+        self.fade_in_animation.setDuration(200)
+        self.fade_in_animation.setStartValue(0.0)
+        self.fade_in_animation.setEndValue(1.0)
+        self.fade_in_animation.setEasingCurve(QEasingCurve.OutCubic)
+        
+        self.fade_out_animation = QPropertyAnimation(self.opacity_effect, b"opacity")
+        self.fade_out_animation.setDuration(300)
+        self.fade_out_animation.setStartValue(1.0)
+        self.fade_out_animation.setEndValue(0.0)
+        self.fade_out_animation.setEasingCurve(QEasingCurve.InCubic)
+        
+        # Timer for auto-hide
+        self.hide_timer = QTimer()
+        self.hide_timer.setSingleShot(True)
+        self.hide_timer.timeout.connect(self.hide_notification)
+        
+        # Initially hidden
+        self.opacity_effect.setOpacity(0.0)
+        self.hide()
+    
+    def show_notification(self, message="Copied to clipboard!"):
+        """Show the notification with a custom message."""
+        self.message_label.setText(message)
+        
+        # Position at top-right of parent
+        if self.parent():
+            parent_rect = self.parent().geometry()
+            x = parent_rect.x() + parent_rect.width() - self.width() - 20
+            y = parent_rect.y() + 20
+            self.move(x, y)
+        
+        # Show and animate
+        self.show()
+        self.raise_()
+        self.activateWindow()
+        
+        # Start fade in animation
+        self.fade_in_animation.start()
+        
+        # Auto-hide after 2 seconds
+        self.hide_timer.start(2000)
+    
+    def hide_notification(self):
+        """Hide the notification with fade out animation."""
+        self.fade_out_animation.finished.connect(self.hide)
+        self.fade_out_animation.start()
+
+
 class MainWindow(QMainWindow):
     """Main application window."""
     
@@ -35,6 +138,9 @@ class MainWindow(QMainWindow):
         self._load_initial_data()
         self._setup_ui()
         self._connect_signals()
+        
+        # Create notification widget
+        self.notification = NotificationWidget(self)
     
     def _apply_theme(self):
         """Apply modern white theme to the application."""
@@ -694,6 +800,9 @@ class MainWindow(QMainWindow):
     def _copy_course_link(self, course: Course):
         """Copy a single course link to clipboard."""
         if self._copy_to_clipboard(course.link):
+            # Show popup notification
+            self.notification.show_notification(f"✓ Copied: {course.title[:30]}...")
+            # Also update status bar
             self.statusBar().showMessage(f"Copied link for: {course.title}")
         else:
             self._show_error("Failed to copy link to clipboard")
@@ -708,6 +817,9 @@ class MainWindow(QMainWindow):
         links_text = "\n".join(links)
         
         if self._copy_to_clipboard(links_text):
+            # Show popup notification
+            self.notification.show_notification(f"✓ Copied {len(links)} links to clipboard")
+            # Also update status bar
             self.statusBar().showMessage(f"Copied {len(links)} links to clipboard")
         else:
             self._show_error("Failed to copy links to clipboard")

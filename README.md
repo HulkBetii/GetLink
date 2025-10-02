@@ -10,6 +10,7 @@ A desktop application for managing and searching course catalogs with advanced f
 - **Real-time Search**: Instant filtering with debounced text search
 - **Link Management**: Copy individual or bulk course links to clipboard
 - **Export Capabilities**: Export filtered results to CSV
+- **Popup Notifications**: Animated success notifications when copying links
 
 ### User Interface
 - **Desktop App**: PyQt5-based native desktop application
