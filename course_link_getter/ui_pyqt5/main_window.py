@@ -222,7 +222,7 @@ class MainWindow(QMainWindow):
         self.settings_manager = SettingsManager()
         self.current_courses: List[Course] = []
         
-        # Initialize translations
+        # Disable translations
         self.translation_manager = init_translations(QApplication.instance())
         
         # Load data first before setting up UI
@@ -237,8 +237,7 @@ class MainWindow(QMainWindow):
         self.moveEvent = self._on_window_move
         self.resizeEvent = self._on_window_resize
         
-        # Load saved language
-        self._load_saved_language()
+        # Multilingual disabled: skip saved language
     
     def _load_saved_language(self):
         """Load saved language from settings or detect system language."""
@@ -750,10 +749,10 @@ class MainWindow(QMainWindow):
         row2_layout = QHBoxLayout()
         row2_layout.setSpacing(15)
         
-        # Language selector
-        self.language_selector = LanguageSelector()
-        self.language_selector.language_changed.connect(self._on_language_changed)
-        row2_layout.addWidget(self.language_selector)
+        # Language selector (disabled)
+        spacer = QWidget()
+        spacer.setFixedWidth(1)
+        row2_layout.addWidget(spacer)
         
         # Add spacer
         row2_layout.addStretch()
@@ -1088,28 +1087,12 @@ class MainWindow(QMainWindow):
                 self._copy_course_link(course)
     
     def _load_initial_data(self):
-        """Load initial data and populate the interface."""
-        # Try multilingual catalog first, fallback to legacy
-        multilingual_path = Path(__file__).parent.parent / "assets" / "catalog.multilingual.json"
+        """Load initial data from legacy single-language catalog only."""
         legacy_path = Path(__file__).parent.parent / "assets" / "catalog.sample.json"
-        
-        # Get current language for data loading
-        current_language = "en"
-        if self.translation_manager:
-            current_language = self.translation_manager.get_current_language()
-        
-        # Try multilingual catalog first
-        if multilingual_path.exists():
-            if self.store.load_from_json(str(multilingual_path), current_language):
-                print(f"✅ Loaded {len(self.store.list_all())} courses from multilingual catalog")
-                return True
-        
-        # Fallback to legacy catalog
         if legacy_path.exists():
             if self.store.load_from_json(str(legacy_path)):
                 print(f"✅ Loaded {len(self.store.list_all())} courses from legacy catalog")
                 return True
-        
         print("❌ Failed to load catalog data")
         return False
     

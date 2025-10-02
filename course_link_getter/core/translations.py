@@ -263,11 +263,11 @@ class TranslationManager(QObject):
 _translation_manager: Optional[TranslationManager] = None
 
 
-def init_translations(app: QApplication) -> TranslationManager:
-    """Initialize the global translation manager."""
+def init_translations(app: QApplication):
+    """Disable translations: return None to make tr() a no-op."""
     global _translation_manager
-    _translation_manager = TranslationManager(app)
-    return _translation_manager
+    _translation_manager = None
+    return None
 
 
 def get_translation_manager() -> Optional[TranslationManager]:
@@ -276,7 +276,20 @@ def get_translation_manager() -> Optional[TranslationManager]:
 
 
 def tr(key: str, **kwargs) -> str:
-    """Convenience function to get translated text."""
-    if _translation_manager:
-        return _translation_manager.tr(key, **kwargs)
-    return key
+    """No-op translation: return simple English labels for known keys, else key."""
+    defaults = {
+        "search_placeholder": "Search courses...",
+        "category_all": "All Categories",
+        "subcategory_all": "All Subcategories",
+        "show_all": "All Results",
+        "export_csv": "Export CSV",
+        "copy_links": "Copy Visible Links",
+        "status_ready": "Ready",
+        "get_link": "Get Link",
+        "table_headers.title": "Title",
+        "table_headers.category": "Category",
+        "table_headers.subcategory": "Subcategory",
+        "table_headers.actions": "Actions",
+        "status_copied": "Copied to clipboard!",
+    }
+    return defaults.get(key, key)
