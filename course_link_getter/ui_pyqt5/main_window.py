@@ -10,10 +10,14 @@ import sys
 import subprocess
 import csv
 from datetime import datetime
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from .widgets import FiltersPanel, ResultsView, Toolbar
-from ..core import CatalogStore, Course
-from ..core.settings import SettingsManager
+from core.store import CatalogStore
+from core.models import Course
+from core.settings import SettingsManager
 
 
 class MainWindow(QMainWindow):
@@ -28,19 +32,201 @@ class MainWindow(QMainWindow):
         self._connect_signals()
         self._load_initial_data()
     
+    def _apply_theme(self):
+        """Apply modern white theme to the application."""
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #ffffff;
+                color: #333333;
+            }
+            
+            QWidget {
+                background-color: #ffffff;
+                color: #333333;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 13px;
+            }
+            
+            QPushButton {
+                background-color: #007AFF;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-weight: 500;
+                min-height: 20px;
+            }
+            
+            QPushButton:hover {
+                background-color: #0056CC;
+            }
+            
+            QPushButton:pressed {
+                background-color: #004499;
+            }
+            
+            QPushButton:disabled {
+                background-color: #E5E5E7;
+                color: #8E8E93;
+            }
+            
+            QComboBox {
+                background-color: #ffffff;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                padding: 6px 12px;
+                min-height: 20px;
+            }
+            
+            QComboBox:hover {
+                border-color: #007AFF;
+            }
+            
+            QComboBox:focus {
+                border-color: #007AFF;
+                outline: none;
+            }
+            
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid #666666;
+                margin-right: 5px;
+            }
+            
+            QLineEdit {
+                background-color: #ffffff;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                padding: 8px 12px;
+                min-height: 20px;
+            }
+            
+            QLineEdit:hover {
+                border-color: #007AFF;
+            }
+            
+            QLineEdit:focus {
+                border-color: #007AFF;
+                outline: none;
+            }
+            
+            QTableView {
+                background-color: #ffffff;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                gridline-color: #E5E5E7;
+                selection-background-color: #E3F2FD;
+                alternate-background-color: #F8F9FA;
+            }
+            
+            QTableView::item {
+                padding: 8px;
+                border: none;
+            }
+            
+            QTableView::item:selected {
+                background-color: #E3F2FD;
+                color: #1976D2;
+            }
+            
+            QHeaderView::section {
+                background-color: #F8F9FA;
+                color: #333333;
+                border: none;
+                border-bottom: 1px solid #D1D1D6;
+                border-right: 1px solid #E5E5E7;
+                padding: 8px;
+                font-weight: 600;
+            }
+            
+            QGroupBox {
+                font-weight: 600;
+                color: #333333;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                margin-top: 8px;
+                padding-top: 8px;
+            }
+            
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 8px 0 8px;
+                background-color: #ffffff;
+            }
+            
+            QLabel {
+                color: #333333;
+            }
+            
+            QStatusBar {
+                background-color: #F8F9FA;
+                border-top: 1px solid #D1D1D6;
+                color: #666666;
+            }
+            
+            QMenuBar {
+                background-color: #ffffff;
+                border-bottom: 1px solid #D1D1D6;
+                color: #333333;
+            }
+            
+            QMenuBar::item {
+                background-color: transparent;
+                padding: 6px 12px;
+            }
+            
+            QMenuBar::item:selected {
+                background-color: #E3F2FD;
+                color: #1976D2;
+            }
+            
+            QMenu {
+                background-color: #ffffff;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                color: #333333;
+            }
+            
+            QMenu::item {
+                padding: 8px 16px;
+            }
+            
+            QMenu::item:selected {
+                background-color: #E3F2FD;
+                color: #1976D2;
+            }
+        """)
+    
     def _setup_ui(self):
         """Setup the main user interface."""
         self.setWindowTitle("Course Link Getter")
         self.setGeometry(100, 100, 1200, 800)
         
+        # Apply modern white theme
+        self._apply_theme()
+        
         # Central widget
         central_widget = QWidget()
+        central_widget.setStyleSheet("""
+            QWidget {
+                background-color: #ffffff;
+                color: #333333;
+            }
+        """)
         self.setCentralWidget(central_widget)
         
         # Main layout
         main_layout = QVBoxLayout(central_widget)
-        main_layout.setSpacing(5)
-        main_layout.setContentsMargins(5, 5, 5, 5)
+        main_layout.setSpacing(8)
+        main_layout.setContentsMargins(10, 10, 10, 10)
         
         # Toolbar
         self.toolbar = Toolbar()

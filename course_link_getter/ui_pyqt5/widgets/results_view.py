@@ -10,7 +10,10 @@ from typing import List, Optional
 import webbrowser
 import subprocess
 import sys
-from ...core.models import Course
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from core.models import Course
 
 
 class CourseTableModel(QAbstractTableModel):
@@ -104,7 +107,80 @@ class ResultsView(QWidget):
     def _setup_ui(self):
         """Setup the user interface."""
         layout = QVBoxLayout(self)
-        layout.setSpacing(10)
+        layout.setSpacing(12)
+        layout.setContentsMargins(8, 8, 8, 8)
+        
+        # Apply modern styling
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #ffffff;
+                color: #333333;
+            }
+            
+            QLabel {
+                color: #333333;
+                font-size: 13px;
+                font-weight: 500;
+            }
+            
+            QTableView {
+                background-color: #ffffff;
+                border: 1px solid #D1D1D6;
+                border-radius: 8px;
+                gridline-color: #E5E5E7;
+                selection-background-color: #E3F2FD;
+                alternate-background-color: #F8F9FA;
+            }
+            
+            QTableView::item {
+                padding: 12px 8px;
+                border: none;
+                font-size: 13px;
+            }
+            
+            QTableView::item:selected {
+                background-color: #E3F2FD;
+                color: #1976D2;
+            }
+            
+            QTableView::item:hover {
+                background-color: #F5F5F5;
+            }
+            
+            QHeaderView::section {
+                background-color: #F8F9FA;
+                color: #333333;
+                border: none;
+                border-bottom: 1px solid #D1D1D6;
+                border-right: 1px solid #E5E5E7;
+                padding: 12px 8px;
+                font-weight: 600;
+                font-size: 13px;
+            }
+            
+            QHeaderView::section:hover {
+                background-color: #E8F4FD;
+            }
+            
+            QPushButton {
+                background-color: #007AFF;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 6px 12px;
+                font-weight: 500;
+                min-height: 20px;
+                font-size: 12px;
+            }
+            
+            QPushButton:hover {
+                background-color: #0056CC;
+            }
+            
+            QPushButton:pressed {
+                background-color: #004499;
+            }
+        """)
         
         # Results header
         header_layout = QHBoxLayout()

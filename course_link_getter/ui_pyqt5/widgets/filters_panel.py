@@ -4,9 +4,13 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import pyqtSignal, QTimer
 from typing import List, Optional
-from ...core.models import Category
-from ...core.store import CatalogStore
-from ...core.settings import SettingsManager
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from core.models import Category
+from core.store import CatalogStore
+from core.settings import SettingsManager
 
 
 class FiltersPanel(QWidget):
@@ -35,7 +39,107 @@ class FiltersPanel(QWidget):
     def _setup_ui(self):
         """Setup the user interface."""
         layout = QVBoxLayout(self)
-        layout.setSpacing(10)
+        layout.setSpacing(12)
+        layout.setContentsMargins(8, 8, 8, 8)
+        
+        # Apply modern styling
+        self.setStyleSheet("""
+            QGroupBox {
+                font-weight: 600;
+                color: #333333;
+                border: 1px solid #D1D1D6;
+                border-radius: 8px;
+                margin-top: 12px;
+                padding-top: 12px;
+                background-color: #FAFAFA;
+            }
+            
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 12px;
+                padding: 0 8px 0 8px;
+                background-color: #FAFAFA;
+                color: #333333;
+            }
+            
+            QComboBox {
+                background-color: #ffffff;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                padding: 8px 12px;
+                min-height: 24px;
+                font-size: 13px;
+            }
+            
+            QComboBox:hover {
+                border-color: #007AFF;
+            }
+            
+            QComboBox:focus {
+                border-color: #007AFF;
+                outline: none;
+            }
+            
+            QComboBox::drop-down {
+                border: none;
+                width: 24px;
+            }
+            
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid #666666;
+                margin-right: 8px;
+            }
+            
+            QLineEdit {
+                background-color: #ffffff;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                padding: 10px 12px;
+                min-height: 24px;
+                font-size: 13px;
+            }
+            
+            QLineEdit:hover {
+                border-color: #007AFF;
+            }
+            
+            QLineEdit:focus {
+                border-color: #007AFF;
+                outline: none;
+            }
+            
+            QPushButton {
+                background-color: #007AFF;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-weight: 500;
+                min-height: 24px;
+                font-size: 13px;
+            }
+            
+            QPushButton:hover {
+                background-color: #0056CC;
+            }
+            
+            QPushButton:pressed {
+                background-color: #004499;
+            }
+            
+            QPushButton:disabled {
+                background-color: #E5E5E7;
+                color: #8E8E93;
+            }
+            
+            QLabel {
+                color: #333333;
+                font-size: 13px;
+            }
+        """)
         
         # Search box
         search_group = QGroupBox("Search")

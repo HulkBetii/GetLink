@@ -22,8 +22,46 @@ class Toolbar(QWidget):
     def _setup_ui(self):
         """Setup the user interface."""
         layout = QHBoxLayout(self)
-        layout.setSpacing(10)
-        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(12)
+        layout.setContentsMargins(12, 12, 12, 12)
+        
+        # Apply modern styling
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #F8F9FA;
+                color: #333333;
+            }
+            
+            QPushButton {
+                background-color: #007AFF;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-weight: 500;
+                min-height: 24px;
+                font-size: 13px;
+            }
+            
+            QPushButton:hover {
+                background-color: #0056CC;
+            }
+            
+            QPushButton:pressed {
+                background-color: #004499;
+            }
+            
+            QPushButton:disabled {
+                background-color: #E5E5E7;
+                color: #8E8E93;
+            }
+            
+            QLabel {
+                color: #666666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+        """)
         
         # Show all button
         self.show_all_btn = QPushButton("Show All Results")
