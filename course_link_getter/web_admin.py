@@ -47,12 +47,26 @@ def get_course_by_id(courses: List[Dict[str, Any]], course_id: str) -> Optional[
     return None
 
 
+def _get_categories_en(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    cats = data.get("categories")
+    if isinstance(cats, dict):
+        return list(cats.get("en", []))
+    return list(cats or [])
+
+
+def _set_categories_en(data: Dict[str, Any], categories: List[Dict[str, Any]]) -> None:
+    cats = data.get("categories")
+    if isinstance(cats, dict):
+        cats["en"] = categories
+    else:
+        data["categories"] = categories
+
+
 @app.route("/")
 def index():
     data = load_catalog()
     courses = data.get("courses", [])
-    categories = sorted({(c.get("category"), c.get("subcategory")) for c in courses})
-    return render_template("index.html", courses=courses, categories=categories)
+    return render_template("index.html", courses=courses, categories=[])
 
 
 # ---------------------- Category Management ----------------------
@@ -60,13 +74,8 @@ def index():
 @app.route("/categories")
 def list_categories():
     data = load_catalog()
-    cats = data.get("categories", [])
-    # normalize to simple structure: name + subcategories list
-    normalized = []
-    for c in cats:
-        name = c.get("name") if isinstance(c, dict) else c
-        subs = c.get("subcategories", []) if isinstance(c, dict) else []
-        normalized.append({"name": name, "subcategories": subs})
+    cats = _get_categories_en(data)
+    normalized = [{"name": c.get("name"), "subcategories": c.get("subcategories", [])} for c in cats]
     return render_template("categories.html", categories=normalized)
 
 
@@ -79,11 +88,13 @@ def add_category():
             flash("Category name is required", "danger")
             return render_template("category_form.html", mode="add", values=request.form)
         # ensure unique
-        names = { (c.get("name") if isinstance(c, dict) else c) for c in data.get("categories", []) }
+        names = { c.get("name") for c in _get_categories_en(data) }
         if name in names:
             flash("Category already exists", "danger")
             return render_template("category_form.html", mode="add", values=request.form)
-        data.setdefault("categories", []).append({"name": name, "subcategories": []})
+        cats = _get_categories_en(data)
+        cats.append({"name": name, "subcategories": []})
+        _set_categories_en(data, cats)
         save_catalog(data)
         flash("Category added", "success")
         return redirect(url_for("list_categories"))
@@ -93,13 +104,8 @@ def add_category():
 @app.route("/categories/edit/<name>", methods=["GET", "POST"])
 def edit_category(name: str):
     data = load_catalog()
-    cats = data.get("categories", [])
-    cat = None
-    for c in cats:
-        n = c.get("name") if isinstance(c, dict) else c
-        if n == name:
-            cat = c
-            break
+    cats = _get_categories_en(data)
+    cat = next((c for c in cats if c.get("name") == name), None)
     if not cat:
         flash("Category not found", "danger")
         return redirect(url_for("list_categories"))
@@ -114,6 +120,7 @@ def edit_category(name: str):
         # update cat
         cat["name"] = new_name
         cat["subcategories"] = subs
+        _set_categories_en(data, cats)
         # update courses referencing the old name
         for course in data.get("courses", []):
             if course.get("category") == name:
@@ -124,8 +131,8 @@ def edit_category(name: str):
         return redirect(url_for("list_categories"))
 
     initial = {
-        "name": cat.get("name") if isinstance(cat, dict) else cat,
-        "subcategories": ", ".join(cat.get("subcategories", [])) if isinstance(cat, dict) else "",
+        "name": cat.get("name"),
+        "subcategories": ", ".join(cat.get("subcategories", [])),
     }
     return render_template("category_form.html", mode="edit", values=initial, original=name)
 
@@ -133,13 +140,9 @@ def edit_category(name: str):
 @app.post("/categories/delete/<name>")
 def delete_category(name: str):
     data = load_catalog()
-    cats = data.get("categories", [])
-    new_cats = []
-    for c in cats:
-        n = c.get("name") if isinstance(c, dict) else c
-        if n != name:
-            new_cats.append(c)
-    data["categories"] = new_cats
+    cats = _get_categories_en(data)
+    new_cats = [c for c in cats if c.get("name") != name]
+    _set_categories_en(data, new_cats)
     # cascade: remove courses in this category
     data["courses"] = [cr for cr in data.get("courses", []) if cr.get("category") != name]
     save_catalog(data)
