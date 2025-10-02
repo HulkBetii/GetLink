@@ -1,0 +1,40 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+  <h2 style="margin-top:0;">Courses</h2>
+  <p>Total: {{ courses|length }}</p>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title (en)</th>
+        <th>Category</th>
+        <th>Subcategory</th>
+        <th>Provider</th>
+        <th>Link</th>
+        <th>Tags</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in courses %}
+      <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ (c.title.en if c.title is mapping else c.title) | default('') }}</td>
+        <td>{{ c.category }}</td>
+        <td>{{ c.subcategory }}</td>
+        <td>{{ c.provider }}</td>
+        <td><a href="{{ c.link }}" target="_blank">open</a></td>
+        <td>{{ ", ".join(c.tags or []) }}</td>
+        <td>
+          <a class="btn secondary" href="{{ url_for('edit_course', course_id=c.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('delete_course', course_id=c.id) }}" style="display:inline;" onsubmit="return confirm('Delete this course?');">
+            <button class="btn danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
+
+

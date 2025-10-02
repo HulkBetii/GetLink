@@ -51,4 +51,14 @@ course_link_getter/
 - Recommended Python 3.11+
 - Settings and language preferences persist between sessions
 
+## Simple Web Admin (optional)
+Edit your catalog in the browser.
+
+```bash
+cd course_link_getter
+pip install -r requirements.txt  # includes Flask
+python web_admin.py
+# Open http://localhost:8082
+```
+
 MIT License
