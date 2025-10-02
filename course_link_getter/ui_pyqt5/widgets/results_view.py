@@ -305,13 +305,13 @@ class ResultsView(QWidget):
                 width: 0px;
             }
 
-            /* Smaller tooltip styling for compact messages */
+            /* Light, compact tooltip styling */
             QToolTip {
-                background-color: #333333;
-                color: #FFFFFF;
-                border: none;
+                background-color: #FFFFFF;
+                color: #333333;
+                border: 1px solid #D1D1D6;
                 border-radius: 6px;
-                padding: 4px 8px;
+                padding: 3px 6px;
                 font-size: 11px;
             }
         """)
