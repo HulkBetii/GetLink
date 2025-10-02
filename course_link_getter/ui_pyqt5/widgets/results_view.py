@@ -1,11 +1,11 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTableView, QHeaderView,
     QPushButton, QLabel, QAbstractItemView, QMessageBox, QMenu,
-    QToolTip, QApplication
+    QToolTip, QApplication, QStyledItemDelegate, QStyleOptionButton, QStyle
 )
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSignal, QTimer, QSize
 from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QPainter
 from typing import List, Optional
 import webbrowser
 import subprocess
@@ -14,6 +14,53 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from core.models import Course
+
+
+class ButtonDelegate(QStyledItemDelegate):
+    """Custom delegate to render buttons in table cells."""
+    
+    button_clicked = pyqtSignal(int)  # Emits row index when button is clicked
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.button_rect = None
+    
+    def paint(self, painter, option, index):
+        """Paint a button in the cell."""
+        if index.column() == 5:  # Actions column
+            # Create button style option
+            button_option = QStyleOptionButton()
+            button_option.rect = option.rect.adjusted(4, 4, -4, -4)  # Add padding
+            button_option.text = "Get Link"
+            button_option.state = QStyle.State_Enabled
+            
+            # Check if mouse is over this cell
+            if option.state & QStyle.State_MouseOver:
+                button_option.state |= QStyle.State_MouseOver
+            
+            # Draw the button
+            QApplication.style().drawControl(QStyle.CE_PushButton, button_option, painter)
+        else:
+            # For other columns, use default painting
+            super().paint(painter, option, index)
+    
+    def editorEvent(self, event, model, option, index):
+        """Handle mouse events on the button."""
+        if index.column() == 5:  # Actions column
+            if event.type() == event.MouseButtonPress:
+                if event.button() == Qt.LeftButton:
+                    # Check if click is within button bounds
+                    button_rect = option.rect.adjusted(4, 4, -4, -4)
+                    if button_rect.contains(event.pos()):
+                        self.button_clicked.emit(index.row())
+                        return True
+        return super().editorEvent(event, model, option, index)
+    
+    def sizeHint(self, option, index):
+        """Return the size hint for the button."""
+        if index.column() == 5:  # Actions column
+            return QSize(80, 30)  # Button size
+        return super().sizeHint(option, index)
 
 
 class CourseTableModel(QAbstractTableModel):
@@ -51,7 +98,7 @@ class CourseTableModel(QAbstractTableModel):
             elif col == 4:  # Tags
                 return ", ".join(course.tags) if course.tags else "N/A"
             elif col == 5:  # Actions
-                return "Get Link"
+                return ""  # Empty text since we render a button
         elif role == Qt.ToolTipRole:
             # Show full link in tooltip for better UX
             if col == 3:  # Provider column - show full link
@@ -202,6 +249,11 @@ class ResultsView(QWidget):
         self.model = CourseTableModel()
         self.table_view.setModel(self.model)
         
+        # Set up button delegate for Actions column
+        self.button_delegate = ButtonDelegate(self.table_view)
+        self.table_view.setItemDelegateForColumn(5, self.button_delegate)
+        self.button_delegate.button_clicked.connect(self._on_button_clicked)
+        
         # Configure columns
         header = self.table_view.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)  # Title - stretches to fill space
@@ -219,7 +271,6 @@ class ResultsView(QWidget):
         
         # Connect signals
         self.table_view.doubleClicked.connect(self._on_double_clicked)
-        self.table_view.clicked.connect(self._on_cell_clicked)
         self.table_view.customContextMenuRequested.connect(self._show_context_menu)
         
         # Enable context menu
@@ -231,6 +282,12 @@ class ResultsView(QWidget):
         """Set the courses to display."""
         self.model.set_courses(courses)
         self.results_label.setText(f"Results: {len(courses)} courses")
+    
+    def _on_button_clicked(self, row: int):
+        """Handle button click in Actions column."""
+        course = self.model.get_course(row)
+        if course:
+            self._copy_course_link(course)
     
     def _on_double_clicked(self, index: QModelIndex):
         """Handle double-click on table row."""
@@ -289,13 +346,6 @@ class ResultsView(QWidget):
         self.feedback_timer.setSingleShot(True)
         self.feedback_timer.timeout.connect(self._hide_feedback)
         self.feedback_message = None
-    
-    def _on_cell_clicked(self, index: QModelIndex):
-        """Handle cell click - if it's the Get Link column, copy the link."""
-        if index.column() == 5:  # Actions column
-            course = self.model.get_course(index.row())
-            if course:
-                self._copy_course_link(course)
     
     def _on_double_clicked(self, index: QModelIndex):
         """Handle double-click on table row."""

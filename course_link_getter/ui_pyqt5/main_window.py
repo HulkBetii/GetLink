@@ -688,8 +688,7 @@ class MainWindow(QMainWindow):
         self.export_csv_btn.clicked.connect(self._export_to_csv)
         self.copy_links_btn.clicked.connect(self._copy_all_links)
         
-        # Table view signals
-        self.table_view.clicked.connect(self._on_table_clicked)
+        # Table view signals (buttons handle clicks now)
         
         # Load initial data into the UI
         self._load_categories()
@@ -738,13 +737,6 @@ class MainWindow(QMainWindow):
     def _on_subcategory_changed(self, subcategory_name):
         """Handle subcategory selection change."""
         self._on_filters_changed()
-    
-    def _on_table_clicked(self, index):
-        """Handle table cell click."""
-        if index.column() == 5:  # Action column
-            course = self.model.get_course(index.row())
-            if course:
-                self._copy_course_link(course)
     
     def _load_initial_data(self):
         """Load initial data and populate the interface."""
