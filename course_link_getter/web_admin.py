@@ -55,6 +55,98 @@ def index():
     return render_template("index.html", courses=courses, categories=categories)
 
 
+# ---------------------- Category Management ----------------------
+
+@app.route("/categories")
+def list_categories():
+    data = load_catalog()
+    cats = data.get("categories", [])
+    # normalize to simple structure: name + subcategories list
+    normalized = []
+    for c in cats:
+        name = c.get("name") if isinstance(c, dict) else c
+        subs = c.get("subcategories", []) if isinstance(c, dict) else []
+        normalized.append({"name": name, "subcategories": subs})
+    return render_template("categories.html", categories=normalized)
+
+
+@app.route("/categories/add", methods=["GET", "POST"])
+def add_category():
+    data = load_catalog()
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        if not name:
+            flash("Category name is required", "danger")
+            return render_template("category_form.html", mode="add", values=request.form)
+        # ensure unique
+        names = { (c.get("name") if isinstance(c, dict) else c) for c in data.get("categories", []) }
+        if name in names:
+            flash("Category already exists", "danger")
+            return render_template("category_form.html", mode="add", values=request.form)
+        data.setdefault("categories", []).append({"name": name, "subcategories": []})
+        save_catalog(data)
+        flash("Category added", "success")
+        return redirect(url_for("list_categories"))
+    return render_template("category_form.html", mode="add", values={})
+
+
+@app.route("/categories/edit/<name>", methods=["GET", "POST"])
+def edit_category(name: str):
+    data = load_catalog()
+    cats = data.get("categories", [])
+    cat = None
+    for c in cats:
+        n = c.get("name") if isinstance(c, dict) else c
+        if n == name:
+            cat = c
+            break
+    if not cat:
+        flash("Category not found", "danger")
+        return redirect(url_for("list_categories"))
+
+    if request.method == "POST":
+        new_name = request.form.get("name", "").strip()
+        subs_raw = request.form.get("subcategories", "")
+        subs = [s.strip() for s in subs_raw.split(",") if s.strip()]
+        if not new_name:
+            flash("Category name is required", "danger")
+            return render_template("category_form.html", mode="edit", values=request.form, original=name)
+        # update cat
+        cat["name"] = new_name
+        cat["subcategories"] = subs
+        # update courses referencing the old name
+        for course in data.get("courses", []):
+            if course.get("category") == name:
+                course["category"] = new_name
+                # if current subcategory not in list anymore, keep as-is (user can adjust later)
+        save_catalog(data)
+        flash("Category updated", "success")
+        return redirect(url_for("list_categories"))
+
+    initial = {
+        "name": cat.get("name") if isinstance(cat, dict) else cat,
+        "subcategories": ", ".join(cat.get("subcategories", [])) if isinstance(cat, dict) else "",
+    }
+    return render_template("category_form.html", mode="edit", values=initial, original=name)
+
+
+@app.post("/categories/delete/<name>")
+def delete_category(name: str):
+    data = load_catalog()
+    cats = data.get("categories", [])
+    new_cats = []
+    for c in cats:
+        n = c.get("name") if isinstance(c, dict) else c
+        if n != name:
+            new_cats.append(c)
+    data["categories"] = new_cats
+    # cascade: remove courses in this category
+    data["courses"] = [cr for cr in data.get("courses", []) if cr.get("category") != name]
+    save_catalog(data)
+    flash("Category deleted (and its courses)", "success")
+    return redirect(url_for("list_categories"))
+
+
 def _next_id(existing: List[Dict[str, Any]]) -> str:
     """Generate a simple auto-increment id like c-0001, c-0002."""
     prefix = "c-"

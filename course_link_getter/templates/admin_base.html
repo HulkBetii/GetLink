@@ -46,8 +46,10 @@
         <div class="row" style="justify-content: space-between;">
             <div>Catalog Admin</div>
             <nav class="row" style="gap:12px;">
-                <a class="btn" href="{{ url_for('index') }}">Home</a>
+                <a class="btn" href="{{ url_for('index') }}">Courses</a>
                 <a class="btn secondary" href="{{ url_for('add_course') }}">Add Course</a>
+                <a class="btn" href="{{ url_for('list_categories') }}">Categories</a>
+                <a class="btn secondary" href="{{ url_for('add_category') }}">Add Category</a>
             </nav>
         </div>
     </header>

@@ -1,0 +1,20 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+  <h2 style="margin-top:0;">{{ 'Add Category' if mode == 'add' else 'Edit Category' }}</h2>
+  <form method="post">
+    <div class="field">
+      <label>Name</label>
+      <input name="name" value="{{ values.get('name','') }}" {{ 'readonly' if mode=='edit' and values.get('name') != original else '' }} />
+    </div>
+    <div class="field">
+      <label>Subcategories (comma separated)</label>
+      <input name="subcategories" value="{{ values.get('subcategories','') }}" placeholder="IELTS, TOEIC, Speaking" />
+    </div>
+    <div class="row" style="gap:8px;">
+      <button class="btn" type="submit">{{ 'Add' if mode == 'add' else 'Save' }}</button>
+      <a class="btn secondary" href="{{ url_for('list_categories') }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}
+
+
