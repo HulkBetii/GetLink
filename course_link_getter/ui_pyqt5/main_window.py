@@ -16,115 +16,201 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from .widgets.results_view import CourseTableModel
+from .widgets.results_view import CourseTableModel, ButtonDelegate
+from .widgets.language_selector import LanguageSelector
+from .widgets.rtl_helper import RTLHelper
 from core.store import CatalogStore
 from core.models import Course
 from core.settings import SettingsManager
+from core.translations import init_translations, get_translation_manager, tr
 
+
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGraphicsOpacityEffect
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QTimer, QPoint
+from PyQt5.QtGui import QGuiApplication, QCursor
 
 class NotificationWidget(QWidget):
     """Custom notification widget for showing copy success messages."""
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(
+            Qt.FramelessWindowHint
+            | Qt.WindowStaysOnTopHint
+            | Qt.Tool  # tránh hiện trên task switcher một số nền tảng
+        )
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowFlag(Qt.WindowDoesNotAcceptFocus, True)  # tránh cướp focus
         self.setFixedSize(400, 80)
-        
-        # Create main container
+
+        # --- UI ---
         self.container = QWidget()
         self.container.setStyleSheet("""
             QWidget {
                 background-color: #4CAF50;
                 border-radius: 12px;
                 border: 2px solid #45a049;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             }
         """)
-        
-        # Layout
+
         layout = QHBoxLayout(self.container)
         layout.setContentsMargins(15, 10, 15, 10)
-        
-        # Icon
+
         self.icon_label = QLabel("✓")
         self.icon_label.setStyleSheet("""
-            QLabel {
-                color: white;
-                font-size: 24px;
-                font-weight: bold;
-            }
+            QLabel { color: white; font-size: 24px; font-weight: bold; }
         """)
         layout.addWidget(self.icon_label)
-        
-        # Message
-        self.message_label = QLabel("Copied to clipboard!")
+
+        self.message_label = QLabel(tr("status_copied"))
         self.message_label.setStyleSheet("""
-            QLabel {
-                color: white;
-                font-size: 16px;
-                font-weight: 600;
-            }
+            QLabel { color: white; font-size: 16px; font-weight: 600; }
         """)
         layout.addWidget(self.message_label)
-        
-        # Main layout
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(self.container)
-        
-        # Animation setup
+
+        # --- Effects & Animations ---
         self.opacity_effect = QGraphicsOpacityEffect()
         self.setGraphicsEffect(self.opacity_effect)
-        
+
         self.fade_in_animation = QPropertyAnimation(self.opacity_effect, b"opacity")
         self.fade_in_animation.setDuration(200)
         self.fade_in_animation.setStartValue(0.0)
         self.fade_in_animation.setEndValue(1.0)
         self.fade_in_animation.setEasingCurve(QEasingCurve.OutCubic)
-        
+
         self.fade_out_animation = QPropertyAnimation(self.opacity_effect, b"opacity")
         self.fade_out_animation.setDuration(300)
         self.fade_out_animation.setStartValue(1.0)
         self.fade_out_animation.setEndValue(0.0)
         self.fade_out_animation.setEasingCurve(QEasingCurve.InCubic)
-        
-        # Timer for auto-hide
+        # kết nối 1 lần để tránh trùng lặp
+        self.fade_out_animation.finished.connect(self.hide)
+
         self.hide_timer = QTimer()
         self.hide_timer.setSingleShot(True)
         self.hide_timer.timeout.connect(self.hide_notification)
-        
-        # Initially hidden
+
         self.opacity_effect.setOpacity(0.0)
         self.hide()
-    
-    def show_notification(self, message="Copied to clipboard!"):
-        """Show the notification with a custom message."""
+
+    # ---------- ĐẶT VỊ TRÍ GÓC TRÊN-PHẢI ----------
+
+    def _screen_for_widget(self):
+        """Chọn màn hình hợp lý: chứa parent (global), hoặc con trỏ, hoặc màn hình chính."""
+        parent = self.parent() if isinstance(self.parent(), QWidget) else None
+
+        # Ưu tiên: màn hình nơi đặt parent (global center)
+        if parent:
+            center_global = parent.mapToGlobal(QPoint(parent.width() // 2, parent.height() // 2))
+            scr = QGuiApplication.screenAt(center_global)
+            if scr:
+                return scr
+
+        # Fallback: màn hình dưới con trỏ
+        scr = QGuiApplication.screenAt(QCursor.pos())
+        if scr:
+            return scr
+
+        # Cuối cùng: màn hình chính
+        return QGuiApplication.primaryScreen()
+
+    def _place_top_right_on_screen(self, margin=16):
+        """Đặt toast ở góc trên-phải của màn hình (tôn trọng taskbar/dock)."""
+        screen = self._screen_for_widget()
+        arect = screen.availableGeometry()  # không đè lên taskbar/dock
+
+        # Clamp kích thước nếu toast lớn hơn vùng khả dụng
+        w = min(self.width(), arect.width())
+        h = min(self.height(), arect.height())
+
+        # Tính toạ độ: góc trên-phải, có margin
+        x = arect.right() - w - margin
+        y = arect.top() + margin
+
+        # Đề phòng DPI/khung: ép trong biên
+        x = max(arect.left(), x)
+        y = max(arect.top(), y)
+
+        # Nếu có thay đổi kích thước do clamp, áp dụng tạm thời
+        if (w, h) != (self.width(), self.height()):
+            self.resize(w, h)
+        self.move(x, y)
+
+    def _place_top_right_in_parent(self, margin=16):
+        """Đặt toast bám theo cửa sổ cha (góc trên-phải parent)."""
+        parent = self.parent()
+        if not isinstance(parent, QWidget):
+            return False
+
+        # Check if current language is RTL
+        is_rtl = False
+        try:
+            from core.translations import get_translation_manager
+            translation_manager = get_translation_manager()
+            if translation_manager:
+                is_rtl = translation_manager.is_rtl_language(translation_manager.get_current_language())
+        except:
+            pass
+
+        if is_rtl:
+            # For RTL languages, position at top-left
+            top_left_global = parent.mapToGlobal(QPoint(0, 0))
+            x = top_left_global.x() + margin
+            y = top_left_global.y() + margin
+        else:
+            # For LTR languages, position at top-right
+            top_right_global = parent.mapToGlobal(QPoint(parent.width(), 0))
+            x = top_right_global.x() - self.width() - margin
+            y = top_right_global.y() + margin
+
+        # Clamp trong vùng màn hình chứa parent
+        screen = QGuiApplication.screenAt(QPoint(x, y)) or QGuiApplication.primaryScreen()
+        arect = screen.availableGeometry()
+        x = max(arect.left(), min(x, arect.right() - self.width()))
+        y = max(arect.top(),  min(y, arect.bottom() - self.height()))
+
+        self.move(x, y)
+        return True
+
+    # ---------- HIỂN THỊ / ẨN ----------
+
+    def show_notification(self, message=None, pin_to_parent=True, duration_ms=4000):
+        """Hiển thị thông báo ở góc trên-phải, bảo đảm không tràn màn hình."""
+        if message is None:
+            message = tr("status_copied")
         self.message_label.setText(message)
         
-        # Position at center-top of parent window
-        if self.parent():
-            parent_rect = self.parent().geometry()
-            # Center horizontally, position near top
-            x = parent_rect.x() + (parent_rect.width() - self.width()) // 2
-            y = parent_rect.y() + 50  # 50px from top
-            self.move(x, y)
-        
-        # Show and animate
+        # Apply RTL support to notification
+        if hasattr(self, 'parent') and self.parent():
+            from core.translations import get_translation_manager
+            translation_manager = get_translation_manager()
+            if translation_manager:
+                is_rtl = translation_manager.is_rtl_language(translation_manager.get_current_language())
+                RTLHelper.apply_rtl_layout(self, is_rtl)
+
+        placed = False
+        if pin_to_parent:
+            placed = self._place_top_right_in_parent(margin=16)
+        if not placed:
+            self._place_top_right_on_screen(margin=16)
+
+        # Không cướp focus
+        # self.activateWindow()  # bỏ dòng này
+
+        self.opacity_effect.setOpacity(0.0)
         self.show()
         self.raise_()
-        self.activateWindow()
-        
-        # Start fade in animation
         self.fade_in_animation.start()
-        
-        # Auto-hide after 4 seconds (longer visibility)
-        self.hide_timer.start(4000)
-    
+        self.hide_timer.start(duration_ms)
+
     def hide_notification(self):
-        """Hide the notification with fade out animation."""
-        self.fade_out_animation.finished.connect(self.hide)
+        """Ẩn với fade-out (đã connect self.hide 1 lần trong __init__)."""
         self.fade_out_animation.start()
+
 
 
 class MainWindow(QMainWindow):
@@ -135,6 +221,9 @@ class MainWindow(QMainWindow):
         self.store = CatalogStore()
         self.settings_manager = SettingsManager()
         self.current_courses: List[Course] = []
+        
+        # Initialize translations
+        self.translation_manager = init_translations(QApplication.instance())
         
         # Load data first before setting up UI
         self._load_initial_data()
@@ -147,6 +236,93 @@ class MainWindow(QMainWindow):
         # Connect window events to reposition notification
         self.moveEvent = self._on_window_move
         self.resizeEvent = self._on_window_resize
+        
+        # Load saved language
+        self._load_saved_language()
+    
+    def _load_saved_language(self):
+        """Load saved language from settings or detect system language."""
+        saved_language = self.settings_manager.get_language_code()
+        
+        # If no saved language, detect system language
+        if saved_language == "en" and self.translation_manager:
+            detected_language = self.translation_manager.detect_system_language()
+            if detected_language != "en":
+                saved_language = detected_language
+                self.settings_manager.set_language_settings(saved_language)
+        
+        if self.translation_manager:
+            self.translation_manager.load_language(saved_language)
+            self.language_selector.set_language(saved_language)
+    
+    def _on_language_changed(self, language_code: str):
+        """Handle language change."""
+        if self.translation_manager:
+            self.translation_manager.load_language(language_code)
+            self.settings_manager.set_language_settings(language_code)
+            
+            # Apply RTL support if needed
+            self._apply_rtl_support()
+            
+            # Reload data with new language
+            self._load_initial_data()
+            
+            # Update UI text
+            self._update_ui_text()
+            
+            # Refresh the display
+            self._on_filters_changed()
+    
+    def _update_ui_text(self):
+        """Update all UI text with current translations."""
+        # Update search placeholder
+        self.search_input.setPlaceholderText(tr("search_placeholder"))
+        
+        # Update combo boxes
+        self.category_combo.setItemText(0, tr("category_all"))
+        self.subcategory_combo.setItemText(0, tr("subcategory_all"))
+        
+        # Update buttons
+        self.show_all_btn.setText(tr("show_all"))
+        self.copy_links_btn.setText(tr("copy_links"))
+        self.export_csv_btn.setText(tr("export_csv"))
+        
+        # Update table headers
+        self.model.headers = [
+            tr("table_headers.title"), tr("table_headers.category"), 
+            tr("table_headers.subcategory"), tr("table_headers.provider"), 
+            tr("table_headers.tags"), tr("table_headers.actions")
+        ]
+        self.model.headerDataChanged.emit(Qt.Horizontal, 0, len(self.model.headers) - 1)
+        
+        # Update button delegate text
+        self.button_delegate.button_text = tr("get_link")
+        
+        # Update status
+        self.statusBar().showMessage(tr("status_ready"))
+    
+    def _apply_rtl_support(self):
+        """Apply RTL support to the entire application."""
+        if not self.translation_manager:
+            return
+        
+        is_rtl = self.translation_manager.is_rtl_language(self.translation_manager.get_current_language())
+        
+        # Apply RTL layout direction to main window
+        RTLHelper.apply_rtl_layout(self, is_rtl)
+        
+        # Apply RTL styles
+        rtl_styles = RTLHelper.get_rtl_style_adjustments(is_rtl)
+        current_style = self.styleSheet()
+        self.setStyleSheet(current_style + rtl_styles)
+        
+        # Apply RTL to all child widgets
+        self._apply_rtl_to_children(self, is_rtl)
+    
+    def _apply_rtl_to_children(self, widget, is_rtl: bool):
+        """Recursively apply RTL support to child widgets."""
+        for child in widget.findChildren(QWidget):
+            RTLHelper.apply_rtl_layout(child, is_rtl)
     
     def _on_window_move(self, event):
         """Handle window move event to reposition notification."""
@@ -358,9 +534,6 @@ class MainWindow(QMainWindow):
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Header section
-        self._create_header(main_layout)
-        
         # Filter and action panel (horizontal)
         self._create_filter_panel(main_layout)
         
@@ -373,66 +546,11 @@ class MainWindow(QMainWindow):
         # Status bar
         self.statusBar().showMessage("Ready")
     
-    def _create_header(self, parent_layout):
-        """Create the header section with title and icon."""
-        header_widget = QWidget()
-        header_widget.setFixedHeight(120)
-        header_widget.setStyleSheet("""
-            QWidget {
-                background-color: #2C3E50;
-                color: white;
-            }
-        """)
-        
-        header_layout = QVBoxLayout(header_widget)
-        header_layout.setContentsMargins(20, 20, 20, 20)
-        header_layout.setSpacing(8)
-        
-        # Title with icon
-        title_layout = QHBoxLayout()
-        
-        # Icon (using a simple label with emoji for now)
-        icon_label = QLabel("🎓")
-        icon_label.setStyleSheet("""
-            QLabel {
-                font-size: 32px;
-                color: white;
-            }
-        """)
-        title_layout.addWidget(icon_label)
-        
-        # Title text
-        title_label = QLabel("Course Link Getter")
-        title_label.setStyleSheet("""
-            QLabel {
-                font-size: 28px;
-                font-weight: bold;
-                color: white;
-                margin-left: 10px;
-            }
-        """)
-        title_layout.addWidget(title_label)
-        title_layout.addStretch()
-        
-        header_layout.addLayout(title_layout)
-        
-        # Subtitle
-        subtitle_label = QLabel("Browse and access course links through hierarchical categories")
-        subtitle_label.setStyleSheet("""
-            QLabel {
-                font-size: 14px;
-                color: #BDC3C7;
-                margin-left: 42px;
-            }
-        """)
-        header_layout.addWidget(subtitle_label)
-        
-        parent_layout.addWidget(header_widget)
     
     def _create_filter_panel(self, parent_layout):
         """Create the horizontal filter and action panel."""
         filter_widget = QWidget()
-        filter_widget.setFixedHeight(80)
+        filter_widget.setFixedHeight(120)  # Increased height for two rows
         filter_widget.setStyleSheet("""
             QWidget {
                 background-color: #F8F9FA;
@@ -440,9 +558,14 @@ class MainWindow(QMainWindow):
             }
         """)
         
-        filter_layout = QHBoxLayout(filter_widget)
-        filter_layout.setContentsMargins(20, 15, 20, 15)
-        filter_layout.setSpacing(15)
+        # Main vertical layout
+        main_layout = QVBoxLayout(filter_widget)
+        main_layout.setContentsMargins(20, 15, 20, 15)
+        main_layout.setSpacing(10)
+        
+        # Row 1: Search and Categories
+        row1_layout = QHBoxLayout()
+        row1_layout.setSpacing(15)
         
         # Search section
         search_label = QLabel("Search:")
@@ -453,10 +576,10 @@ class MainWindow(QMainWindow):
                 font-size: 13px;
             }
         """)
-        filter_layout.addWidget(search_label)
+        row1_layout.addWidget(search_label)
         
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Search courses...")
+        self.search_input.setPlaceholderText(tr("search_placeholder"))
         self.search_input.setFixedWidth(200)
         self.search_input.setStyleSheet("""
             QLineEdit {
@@ -471,7 +594,7 @@ class MainWindow(QMainWindow):
                 outline: none;
             }
         """)
-        filter_layout.addWidget(self.search_input)
+        row1_layout.addWidget(self.search_input)
         
         # Category section
         category_label = QLabel("Category:")
@@ -482,9 +605,10 @@ class MainWindow(QMainWindow):
                 font-size: 13px;
             }
         """)
-        filter_layout.addWidget(category_label)
+        row1_layout.addWidget(category_label)
         
         self.category_combo = QComboBox()
+        self.category_combo.addItem(tr("category_all"))
         self.category_combo.setFixedWidth(150)
         self.category_combo.setStyleSheet("""
             QComboBox {
@@ -494,11 +618,40 @@ class MainWindow(QMainWindow):
                 padding: 8px 12px;
                 font-size: 13px;
             }
-            QComboBox:focus {
+            QComboBox:hover {
                 border-color: #007AFF;
             }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid #666666;
+                margin-right: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: white;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                selection-background-color: #E3F2FD;
+                outline: none;
+            }
+            QComboBox QAbstractItemView::item {
+                padding: 8px 12px;
+                border: none;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #F5F5F5;
+            }
+            QComboBox QAbstractItemView::item:selected {
+                background-color: #E3F2FD;
+                color: #1976D2;
+            }
         """)
-        filter_layout.addWidget(self.category_combo)
+        row1_layout.addWidget(self.category_combo)
         
         # Subcategory section
         subcategory_label = QLabel("Subcategory:")
@@ -509,9 +662,10 @@ class MainWindow(QMainWindow):
                 font-size: 13px;
             }
         """)
-        filter_layout.addWidget(subcategory_label)
+        row1_layout.addWidget(subcategory_label)
         
         self.subcategory_combo = QComboBox()
+        self.subcategory_combo.addItem(tr("subcategory_all"))
         self.subcategory_combo.setFixedWidth(150)
         self.subcategory_combo.setStyleSheet("""
             QComboBox {
@@ -521,18 +675,60 @@ class MainWindow(QMainWindow):
                 padding: 8px 12px;
                 font-size: 13px;
             }
-            QComboBox:focus {
+            QComboBox:hover {
                 border-color: #007AFF;
             }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid #666666;
+                margin-right: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: white;
+                border: 1px solid #D1D1D6;
+                border-radius: 6px;
+                selection-background-color: #E3F2FD;
+                outline: none;
+            }
+            QComboBox QAbstractItemView::item {
+                padding: 8px 12px;
+                border: none;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #F5F5F5;
+            }
+            QComboBox QAbstractItemView::item:selected {
+                background-color: #E3F2FD;
+                color: #1976D2;
+            }
         """)
-        filter_layout.addWidget(self.subcategory_combo)
+        row1_layout.addWidget(self.subcategory_combo)
+        
+        # Add spacer to push everything to the left
+        row1_layout.addStretch()
+        
+        # Row 2: Language selector and Action buttons
+        row2_layout = QHBoxLayout()
+        row2_layout.setSpacing(15)
+        
+        # Language selector
+        self.language_selector = LanguageSelector()
+        self.language_selector.language_changed.connect(self._on_language_changed)
+        row2_layout.addWidget(self.language_selector)
         
         # Add spacer
-        filter_layout.addStretch()
+        row2_layout.addStretch()
         
         # Action buttons
-        self.show_all_btn = QPushButton("Show All")
-        self.show_all_btn.setFixedSize(100, 35)
+        self.show_all_btn = QPushButton(tr("show_all"))
+        self.show_all_btn.setFixedHeight(35)
+        self.show_all_btn.setMinimumWidth(80)
         self.show_all_btn.setStyleSheet("""
             QPushButton {
                 background-color: #007AFF;
@@ -541,15 +737,20 @@ class MainWindow(QMainWindow):
                 border-radius: 6px;
                 font-weight: 600;
                 font-size: 13px;
+                padding: 8px 16px;
             }
             QPushButton:hover {
                 background-color: #0056CC;
             }
+            QPushButton:pressed {
+                background-color: #004499;
+            }
         """)
-        filter_layout.addWidget(self.show_all_btn)
+        row2_layout.addWidget(self.show_all_btn)
         
-        self.copy_links_btn = QPushButton("Copy All Links")
-        self.copy_links_btn.setFixedSize(120, 35)
+        self.copy_links_btn = QPushButton(tr("copy_links"))
+        self.copy_links_btn.setFixedHeight(35)
+        self.copy_links_btn.setMinimumWidth(100)
         self.copy_links_btn.setStyleSheet("""
             QPushButton {
                 background-color: #007AFF;
@@ -558,15 +759,20 @@ class MainWindow(QMainWindow):
                 border-radius: 6px;
                 font-weight: 600;
                 font-size: 13px;
+                padding: 8px 16px;
             }
             QPushButton:hover {
                 background-color: #0056CC;
             }
+            QPushButton:pressed {
+                background-color: #004499;
+            }
         """)
-        filter_layout.addWidget(self.copy_links_btn)
+        row2_layout.addWidget(self.copy_links_btn)
         
-        self.export_csv_btn = QPushButton("Export CSV")
-        self.export_csv_btn.setFixedSize(100, 35)
+        self.export_csv_btn = QPushButton(tr("export_csv"))
+        self.export_csv_btn.setFixedHeight(35)
+        self.export_csv_btn.setMinimumWidth(80)
         self.export_csv_btn.setStyleSheet("""
             QPushButton {
                 background-color: #007AFF;
@@ -575,12 +781,25 @@ class MainWindow(QMainWindow):
                 border-radius: 6px;
                 font-weight: 600;
                 font-size: 13px;
+                padding: 8px 16px;
             }
             QPushButton:hover {
                 background-color: #0056CC;
             }
+            QPushButton:pressed {
+                background-color: #004499;
+            }
         """)
-        filter_layout.addWidget(self.export_csv_btn)
+        row2_layout.addWidget(self.export_csv_btn)
+        
+        # Add both rows to main layout
+        main_layout.addLayout(row1_layout)
+        main_layout.addLayout(row2_layout)
+        
+        # Apply RTL support to filter widget
+        if self.translation_manager:
+            is_rtl = self.translation_manager.is_rtl_language(self.translation_manager.get_current_language())
+            RTLHelper.apply_rtl_layout(filter_widget, is_rtl)
         
         parent_layout.addWidget(filter_widget)
     
@@ -654,6 +873,11 @@ class MainWindow(QMainWindow):
         self.model = CourseTableModel()
         self.table_view.setModel(self.model)
         
+        # Set up button delegate for Actions column
+        self.button_delegate = ButtonDelegate(self)
+        self.table_view.setItemDelegateForColumn(5, self.button_delegate)
+        self.button_delegate.button_clicked.connect(self._on_button_clicked)
+        
         # Configure columns
         header = self.table_view.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)  # Title
@@ -670,6 +894,12 @@ class MainWindow(QMainWindow):
         self.table_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
         
         results_layout.addWidget(self.table_view)
+        
+        # Apply RTL support to results widget
+        if self.translation_manager:
+            is_rtl = self.translation_manager.is_rtl_language(self.translation_manager.get_current_language())
+            RTLHelper.apply_rtl_layout(results_widget, is_rtl)
+        
         parent_layout.addWidget(results_widget)
     
     def _create_menu_bar(self):
@@ -765,6 +995,12 @@ class MainWindow(QMainWindow):
         """Handle subcategory selection change."""
         self._on_filters_changed()
     
+    def _on_button_clicked(self, row: int):
+        """Handle button click in Actions column."""
+        course = self.model.get_course(row)
+        if course:
+            self._copy_course_link(course)
+    
     def _on_table_clicked(self, index):
         """Handle table cell click."""
         if index.column() == 5:  # Action column
@@ -774,14 +1010,29 @@ class MainWindow(QMainWindow):
     
     def _load_initial_data(self):
         """Load initial data and populate the interface."""
-        # Load JSON data - use correct path (go up one level from ui_pyqt5)
-        json_path = Path(__file__).parent.parent / "assets" / "catalog.sample.json"
-        if not self.store.load_from_json(str(json_path)):
-            print(f"Warning: Failed to load catalog from {json_path}")
-            return False
+        # Try multilingual catalog first, fallback to legacy
+        multilingual_path = Path(__file__).parent.parent / "assets" / "catalog.multilingual.json"
+        legacy_path = Path(__file__).parent.parent / "assets" / "catalog.sample.json"
         
-        print(f"✅ Loaded {len(self.store.list_all())} courses from catalog")
-        return True
+        # Get current language for data loading
+        current_language = "en"
+        if self.translation_manager:
+            current_language = self.translation_manager.get_current_language()
+        
+        # Try multilingual catalog first
+        if multilingual_path.exists():
+            if self.store.load_from_json(str(multilingual_path), current_language):
+                print(f"✅ Loaded {len(self.store.list_all())} courses from multilingual catalog")
+                return True
+        
+        # Fallback to legacy catalog
+        if legacy_path.exists():
+            if self.store.load_from_json(str(legacy_path)):
+                print(f"✅ Loaded {len(self.store.list_all())} courses from legacy catalog")
+                return True
+        
+        print("❌ Failed to load catalog data")
+        return False
     
     def _on_filters_changed(self):
         """Handle any filter change - get filtered courses and update results."""

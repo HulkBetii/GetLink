@@ -11,8 +11,8 @@ class CatalogStore:
         self.courses: List[Course] = []
         self.categories: List[Category] = []
     
-    def load_from_json(self, path: str) -> bool:
-        """Load catalog data from JSON file."""
+    def load_from_json(self, path: str, language_code: str = "en") -> bool:
+        """Load catalog data from JSON file with language support."""
         try:
             json_path = Path(path)
             if not json_path.exists():
@@ -22,7 +22,42 @@ class CatalogStore:
             with open(json_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            # Load categories
+            # Check if this is a multilingual catalog
+            if 'metadata' in data and 'categories' in data and isinstance(data['categories'], dict):
+                return self._load_multilingual_catalog(data, language_code)
+            else:
+                return self._load_legacy_catalog(data)
+                
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f"Error parsing catalog data: {e}")
+            return False
+        except Exception as e:
+            print(f"Error loading catalog: {e}")
+            return False
+    
+    def _load_multilingual_catalog(self, data: dict, language_code: str) -> bool:
+        """Load multilingual catalog data."""
+        try:
+            # Load categories for the specified language
+            categories_data = data['categories'].get(language_code, data['categories'].get('en', []))
+            self.categories = []
+            for cat_data in categories_data:
+                category = Category(
+                    name=cat_data['name'],
+                    subcategories=cat_data.get('subcategories', [])
+                )
+                self.categories.append(category)
+            
+            # Load courses (multilingual data is handled by Course model)
+            self.courses = [Course(**course_data) for course_data in data.get('courses', [])]
+            return True
+        except Exception as e:
+            print(f"Error loading multilingual catalog: {e}")
+            return False
+    
+    def _load_legacy_catalog(self, data: dict) -> bool:
+        """Load legacy single-language catalog data."""
+        try:
             self.categories = []
             for cat_data in data.get('categories', []):
                 category = Category(
@@ -31,16 +66,10 @@ class CatalogStore:
                 )
                 self.categories.append(category)
             
-            # Load courses
             self.courses = [Course(**course_data) for course_data in data.get('courses', [])]
-            
             return True
-            
-        except (json.JSONDecodeError, KeyError) as e:
-            print(f"Error parsing catalog data: {e}")
-            return False
         except Exception as e:
-            print(f"Error loading catalog: {e}")
+            print(f"Error loading legacy catalog: {e}")
             return False
     
     def save_to_json(self, path: str) -> bool:

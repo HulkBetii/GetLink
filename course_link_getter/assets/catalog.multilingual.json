@@ -1,0 +1,244 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "supported_languages": ["en", "vi", "es", "de", "it", "pt", "ja", "ko", "zh", "fr"],
+    "default_language": "en"
+  },
+  "categories": {
+    "en": [
+      {
+        "name": "English",
+        "subcategories": ["IELTS", "TOEIC", "Speaking"]
+      },
+      {
+        "name": "Programming",
+        "subcategories": ["Python", "Web", "Data"]
+      },
+      {
+        "name": "Design",
+        "subcategories": ["UI/UX", "Graphic"]
+      }
+    ],
+    "vi": [
+      {
+        "name": "Tiếng Anh",
+        "subcategories": ["IELTS", "TOEIC", "Nói"]
+      },
+      {
+        "name": "Lập Trình",
+        "subcategories": ["Python", "Web", "Dữ Liệu"]
+      },
+      {
+        "name": "Thiết Kế",
+        "subcategories": ["UI/UX", "Đồ Họa"]
+      }
+    ],
+    "es": [
+      {
+        "name": "Inglés",
+        "subcategories": ["IELTS", "TOEIC", "Conversación"]
+      },
+      {
+        "name": "Programación",
+        "subcategories": ["Python", "Web", "Datos"]
+      },
+      {
+        "name": "Diseño",
+        "subcategories": ["UI/UX", "Gráfico"]
+      }
+    ],
+    "de": [
+      {
+        "name": "Englisch",
+        "subcategories": ["IELTS", "TOEIC", "Sprechen"]
+      },
+      {
+        "name": "Programmierung",
+        "subcategories": ["Python", "Web", "Daten"]
+      },
+      {
+        "name": "Design",
+        "subcategories": ["UI/UX", "Grafik"]
+      }
+    ],
+    "it": [
+      {
+        "name": "Inglese",
+        "subcategories": ["IELTS", "TOEIC", "Conversazione"]
+      },
+      {
+        "name": "Programmazione",
+        "subcategories": ["Python", "Web", "Dati"]
+      },
+      {
+        "name": "Design",
+        "subcategories": ["UI/UX", "Grafica"]
+      }
+    ],
+    "pt": [
+      {
+        "name": "Inglês",
+        "subcategories": ["IELTS", "TOEIC", "Conversação"]
+      },
+      {
+        "name": "Programação",
+        "subcategories": ["Python", "Web", "Dados"]
+      },
+      {
+        "name": "Design",
+        "subcategories": ["UI/UX", "Gráfico"]
+      }
+    ],
+    "ja": [
+      {
+        "name": "英語",
+        "subcategories": ["IELTS", "TOEIC", "スピーキング"]
+      },
+      {
+        "name": "プログラミング",
+        "subcategories": ["Python", "Web", "データ"]
+      },
+      {
+        "name": "デザイン",
+        "subcategories": ["UI/UX", "グラフィック"]
+      }
+    ],
+    "ko": [
+      {
+        "name": "영어",
+        "subcategories": ["IELTS", "TOEIC", "말하기"]
+      },
+      {
+        "name": "프로그래밍",
+        "subcategories": ["Python", "Web", "데이터"]
+      },
+      {
+        "name": "디자인",
+        "subcategories": ["UI/UX", "그래픽"]
+      }
+    ],
+    "zh": [
+      {
+        "name": "英语",
+        "subcategories": ["IELTS", "TOEIC", "口语"]
+      },
+      {
+        "name": "编程",
+        "subcategories": ["Python", "Web", "数据"]
+      },
+      {
+        "name": "设计",
+        "subcategories": ["UI/UX", "图形"]
+      }
+    ],
+    "fr": [
+      {
+        "name": "Anglais",
+        "subcategories": ["IELTS", "TOEIC", "Expression"]
+      },
+      {
+        "name": "Programmation",
+        "subcategories": ["Python", "Web", "Données"]
+      },
+      {
+        "name": "Design",
+        "subcategories": ["UI/UX", "Graphique"]
+      }
+    ]
+  },
+  "courses": [
+    {
+      "id": "eng-001",
+      "titles": {
+        "en": "IELTS Academic Complete Preparation",
+        "vi": "Luyện Thi IELTS Academic Toàn Diện",
+        "es": "Preparación Completa IELTS Académico",
+        "de": "IELTS Academic Komplette Vorbereitung",
+        "it": "Preparazione Completa IELTS Accademico",
+        "pt": "Preparação Completa IELTS Acadêmico",
+        "ja": "IELTS Academic 完全準備",
+        "ko": "IELTS Academic 완전 준비",
+        "zh": "IELTS Academic 完整准备",
+        "fr": "Préparation Complète IELTS Académique"
+      },
+      "category": "English",
+      "subcategory": "IELTS",
+      "provider": "British Council",
+      "link": "https://www.britishcouncil.org/ielts",
+      "tags": {
+        "en": ["IELTS", "Academic", "English", "Test Preparation"],
+        "vi": ["IELTS", "Học Thuật", "Tiếng Anh", "Luyện Thi"],
+        "es": ["IELTS", "Académico", "Inglés", "Preparación de Examen"],
+        "de": ["IELTS", "Akademisch", "Englisch", "Testvorbereitung"],
+        "it": ["IELTS", "Accademico", "Inglese", "Preparazione Test"],
+        "pt": ["IELTS", "Acadêmico", "Inglês", "Preparação para Teste"],
+        "ja": ["IELTS", "アカデミック", "英語", "テスト準備"],
+        "ko": ["IELTS", "아카데믹", "영어", "시험 준비"],
+        "zh": ["IELTS", "学术", "英语", "考试准备"],
+        "fr": ["IELTS", "Académique", "Anglais", "Préparation Test"]
+      }
+    },
+    {
+      "id": "eng-002",
+      "titles": {
+        "en": "TOEIC Speaking & Writing Mastery",
+        "vi": "Thành Thạo TOEIC Speaking & Writing",
+        "es": "Dominio TOEIC Speaking & Writing",
+        "de": "TOEIC Speaking & Writing Meisterschaft",
+        "it": "Padronanza TOEIC Speaking & Writing",
+        "pt": "Domínio TOEIC Speaking & Writing",
+        "ja": "TOEIC Speaking & Writing マスタリー",
+        "ko": "TOEIC Speaking & Writing 마스터리",
+        "zh": "TOEIC Speaking & Writing 精通",
+        "fr": "Maîtrise TOEIC Speaking & Writing"
+      },
+      "category": "English",
+      "subcategory": "TOEIC",
+      "provider": "ETS",
+      "link": "https://www.ets.org/toeic",
+      "tags": {
+        "en": ["TOEIC", "Speaking", "Writing", "Business English"],
+        "vi": ["TOEIC", "Nói", "Viết", "Tiếng Anh Thương Mại"],
+        "es": ["TOEIC", "Expresión Oral", "Escritura", "Inglés de Negocios"],
+        "de": ["TOEIC", "Sprechen", "Schreiben", "Business-Englisch"],
+        "it": ["TOEIC", "Parlato", "Scrittura", "Inglese Commerciale"],
+        "pt": ["TOEIC", "Fala", "Escrita", "Inglês de Negócios"],
+        "ja": ["TOEIC", "スピーキング", "ライティング", "ビジネス英語"],
+        "ko": ["TOEIC", "말하기", "쓰기", "비즈니스 영어"],
+        "zh": ["TOEIC", "口语", "写作", "商务英语"],
+        "fr": ["TOEIC", "Expression Orale", "Écriture", "Anglais des Affaires"]
+      }
+    },
+    {
+      "id": "prog-001",
+      "titles": {
+        "en": "Python for Data Science Complete Course",
+        "vi": "Khóa Học Python Cho Khoa Học Dữ Liệu",
+        "es": "Curso Completo Python para Ciencia de Datos",
+        "de": "Python für Data Science Kompletter Kurs",
+        "it": "Corso Completo Python per Data Science",
+        "pt": "Curso Completo Python para Ciência de Dados",
+        "ja": "データサイエンス用Python完全コース",
+        "ko": "데이터 사이언스를 위한 Python 완전 코스",
+        "zh": "数据科学Python完整课程",
+        "fr": "Cours Complet Python pour Science des Données"
+      },
+      "category": "Programming",
+      "subcategory": "Python",
+      "provider": "Coursera",
+      "link": "https://www.coursera.org/learn/python-data-science",
+      "tags": {
+        "en": ["Python", "Data Science", "Machine Learning", "Analytics"],
+        "vi": ["Python", "Khoa Học Dữ Liệu", "Học Máy", "Phân Tích"],
+        "es": ["Python", "Ciencia de Datos", "Aprendizaje Automático", "Análisis"],
+        "de": ["Python", "Data Science", "Maschinelles Lernen", "Analytik"],
+        "it": ["Python", "Data Science", "Apprendimento Automatico", "Analisi"],
+        "pt": ["Python", "Ciência de Dados", "Aprendizado de Máquina", "Análise"],
+        "ja": ["Python", "データサイエンス", "機械学習", "分析"],
+        "ko": ["Python", "데이터 사이언스", "머신 러닝", "분석"],
+        "zh": ["Python", "数据科学", "机器学习", "分析"],
+        "fr": ["Python", "Science des Données", "Apprentissage Automatique", "Analyse"]
+      }
+    }
+  ]
+}

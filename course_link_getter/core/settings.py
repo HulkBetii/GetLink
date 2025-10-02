@@ -101,3 +101,25 @@ class SettingsManager:
             "search_text": ""
         }
         self._save_settings()
+    
+    def get_language_settings(self) -> Dict[str, Any]:
+        """Get saved language settings."""
+        return self.settings.get("language", {})
+    
+    def set_language_settings(self, language_code: str):
+        """Set and save language settings."""
+        if "language" not in self.settings:
+            self.settings["language"] = {}
+        
+        self.settings["language"]["code"] = language_code
+        self._save_settings()
+    
+    def get_language_code(self) -> str:
+        """Get the saved language code."""
+        return self.settings.get("language", {}).get("code", "en")
+    
+    def clear_language_settings(self):
+        """Clear language settings."""
+        if "language" in self.settings:
+            del self.settings["language"]
+            self._save_settings()

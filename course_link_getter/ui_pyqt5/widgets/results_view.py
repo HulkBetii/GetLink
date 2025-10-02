@@ -1,11 +1,11 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTableView, QHeaderView,
     QPushButton, QLabel, QAbstractItemView, QMessageBox, QMenu,
-    QToolTip, QApplication
+    QToolTip, QApplication, QStyledItemDelegate, QStyleOptionButton, QStyle
 )
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSignal, QTimer, QRect, QSize
 from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QPainter, QFontMetrics
 from typing import List, Optional
 import webbrowser
 import subprocess
@@ -14,6 +14,57 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from core.models import Course
+from core.translations import tr
+
+
+class ButtonDelegate(QStyledItemDelegate):
+    """Custom delegate to render buttons in table cells."""
+    
+    button_clicked = pyqtSignal(int)  # Emits row index when button is clicked
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.button_text = tr("get_link")
+    
+    def paint(self, painter, option, index):
+        """Paint the button in the cell."""
+        if index.column() == 5:  # Actions column
+            # Create button style option
+            button_option = QStyleOptionButton()
+            button_option.rect = option.rect.adjusted(4, 4, -4, -4)  # Add some padding
+            button_option.text = self.button_text
+            button_option.state = QStyle.State_Enabled
+            
+            # Check if mouse is over this cell
+            if option.state & QStyle.State_MouseOver:
+                button_option.state |= QStyle.State_MouseOver
+            
+            # Draw the button
+            QApplication.style().drawControl(QStyle.CE_PushButton, button_option, painter)
+        else:
+            # For other columns, use default painting
+            super().paint(painter, option, index)
+    
+    def editorEvent(self, event, model, option, index):
+        """Handle mouse events on the button."""
+        if index.column() == 5:  # Actions column
+            if event.type() == event.MouseButtonPress:
+                if event.button() == Qt.LeftButton:
+                    # Check if click is within button bounds
+                    button_rect = option.rect.adjusted(4, 4, -4, -4)
+                    if button_rect.contains(event.pos()):
+                        self.button_clicked.emit(index.row())
+                        return True
+        return super().editorEvent(event, model, option, index)
+    
+    def sizeHint(self, option, index):
+        """Return the size hint for the button."""
+        if index.column() == 5:  # Actions column
+            metrics = QFontMetrics(option.font)
+            text_size = metrics.size(Qt.TextSingleLine, self.button_text)
+            # Add padding for button appearance
+            return text_size + QSize(16, 8)  # 8px horizontal, 4px vertical padding
+        return super().sizeHint(option, index)
 
 
 class CourseTableModel(QAbstractTableModel):
@@ -23,7 +74,9 @@ class CourseTableModel(QAbstractTableModel):
         super().__init__()
         self.courses = courses or []
         self.headers = [
-            "Title", "Category", "Subcategory", "Provider", "Tags", "Actions"
+            tr("table_headers.title"), tr("table_headers.category"), 
+            tr("table_headers.subcategory"), tr("table_headers.provider"), 
+            tr("table_headers.tags"), tr("table_headers.actions")
         ]
     
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -39,9 +92,19 @@ class CourseTableModel(QAbstractTableModel):
         course = self.courses[index.row()]
         col = index.column()
         
+        # Get current language for multilingual data
+        current_language = "en"
+        try:
+            from core.translations import get_translation_manager
+            translation_manager = get_translation_manager()
+            if translation_manager:
+                current_language = translation_manager.get_current_language()
+        except:
+            pass
+        
         if role == Qt.DisplayRole:
             if col == 0:  # Title
-                return course.title
+                return course.get_title(current_language)
             elif col == 1:  # Category
                 return course.category
             elif col == 2:  # Subcategory
@@ -49,15 +112,17 @@ class CourseTableModel(QAbstractTableModel):
             elif col == 3:  # Provider
                 return course.provider
             elif col == 4:  # Tags
-                return ", ".join(course.tags) if course.tags else "N/A"
+                tags = course.get_tags(current_language)
+                return ", ".join(tags) if tags else "N/A"
             elif col == 5:  # Actions
-                return "Get Link"
+                return ""  # Empty text, button delegate will handle display
         elif role == Qt.ToolTipRole:
             # Show full link in tooltip for better UX
             if col == 3:  # Provider column - show full link
                 return course.link
             elif col == 4:  # Tags column - show full tags
-                return ", ".join(course.tags) if course.tags else "No tags"
+                tags = course.get_tags(current_language)
+                return ", ".join(tags) if tags else "No tags"
         
         return None
     
@@ -202,6 +267,11 @@ class ResultsView(QWidget):
         self.model = CourseTableModel()
         self.table_view.setModel(self.model)
         
+        # Set up button delegate for Actions column
+        self.button_delegate = ButtonDelegate(self)
+        self.table_view.setItemDelegateForColumn(5, self.button_delegate)
+        self.button_delegate.button_clicked.connect(self._on_button_clicked)
+        
         # Configure columns
         header = self.table_view.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)  # Title - stretches to fill space
@@ -289,6 +359,12 @@ class ResultsView(QWidget):
         self.feedback_timer.setSingleShot(True)
         self.feedback_timer.timeout.connect(self._hide_feedback)
         self.feedback_message = None
+    
+    def _on_button_clicked(self, row: int):
+        """Handle button click in Actions column."""
+        course = self.model.get_course(row)
+        if course:
+            self._copy_course_link(course)
     
     def _on_cell_clicked(self, index: QModelIndex):
         """Handle cell click - if it's the Get Link column, copy the link."""
