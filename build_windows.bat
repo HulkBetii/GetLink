@@ -11,10 +11,28 @@ REM Check if Python is available
 python --version >nul 2>&1
 if errorlevel 1 (
     echo ERROR: Python not found!
-    echo Please install Python 3.8+ from https://python.org
-    echo Make sure to check "Add Python to PATH" during installation
-    pause
-    exit /b 1
+    echo.
+    echo Would you like to install Python automatically? (Y/N)
+    set /p choice="Enter your choice: "
+    
+    if /i "%choice%"=="Y" (
+        echo.
+        echo Starting Python installer...
+        call install_python_windows.bat
+        if errorlevel 1 (
+            echo Python installation failed. Please install manually.
+            pause
+            exit /b 1
+        )
+    ) else (
+        echo.
+        echo Please install Python 3.8+ from https://python.org
+        echo Make sure to check "Add Python to PATH" during installation
+        echo.
+        echo Or run: install_python_windows.bat
+        pause
+        exit /b 1
+    )
 )
 
 echo Python found, starting build...

@@ -32,7 +32,10 @@ def create_distribution():
         "build_windows.bat", 
         "README_BUILD.md",
         "test_windows_build.ps1",
-        "smoketest.ps1"
+        "smoketest.ps1",
+        "install_python_windows.bat",
+        "install_python_windows.ps1",
+        "fix_windows_issues.bat"
     ]
     
     print("📁 Copying build files...")
@@ -88,6 +91,27 @@ The build script will automatically:
 ✓ Generate checksums
 ✓ Run automated tests
 
+TROUBLESHOOTING:
+---------------
+If you encounter issues, try these solutions:
+
+1. Python not found:
+   - Run: install_python_windows.bat
+   - Or: powershell -ExecutionPolicy Bypass -File install_python_windows.ps1
+
+2. Build fails:
+   - Run: fix_windows_issues.bat (comprehensive fix tool)
+   - Check internet connection
+   - Run as Administrator
+
+3. App won't run:
+   - Check Windows Defender settings
+   - Add exception for release/ folder
+
+4. Installer fails:
+   - Run as Administrator
+   - Check NSIS installation
+
 TESTING:
 --------
 After build, run:
@@ -95,16 +119,21 @@ powershell -ExecutionPolicy Bypass -File test_windows_build.ps1
 
 This will test both executables to ensure they work correctly.
 
-TROUBLESHOOTING:
----------------
-- If Python not found: Install from https://python.org
-- If build fails: Check internet connection
-- If app won't run: Check Windows Defender settings
-- If installer fails: Run as Administrator
+FILES INCLUDED:
+--------------
+- build_windows.bat          → Main build script
+- build_windows.py           → Python build script
+- install_python_windows.bat → Auto-install Python
+- install_python_windows.ps1 → PowerShell Python installer
+- fix_windows_issues.bat     → Comprehensive fix tool
+- test_windows_build.ps1     → Test script
+- README_BUILD.md            → Technical documentation
+- course_link_getter/        → Source code
 
 SUPPORT:
 --------
 - Build Guide: README_BUILD.md
+- Issues Fixer: fix_windows_issues.bat
 - Test Script: test_windows_build.ps1
 - Source Code: course_link_getter/
 
