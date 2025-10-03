@@ -1,12 +1,14 @@
 # Course Link Getter
 
-Lightweight PyQt5 desktop app to search a course catalog.
+Lightweight PyQt5 desktop app to search a course catalog with modern UI and clipboard integration.
 
 ## Features
-- Category, Subcategory, and Text filtering with instant updates
-- Copy single/bulk links with animated success notification
-- Proportional table layout (Title 1/2; Category 2/5; Subcategory 2/5; Actions 1/5)
-- Minimal transparent scrollbars; modern light theme
+- **Smart Filtering**: Category, Subcategory, and Text filtering with instant updates
+- **Clipboard Integration**: Copy single/bulk links with animated success notification
+- **Modern UI**: Proportional table layout (Title 50%; Category 20%; Subcategory 20%; Actions 10%)
+- **Export Functionality**: Export filtered results to CSV format
+- **Responsive Design**: Minimal transparent scrollbars with modern light theme
+- **Cross-platform**: Works on macOS, Windows, and Linux
 
 ## Quick start
 ```bash
@@ -34,9 +36,21 @@ course_link_getter/
 └── README.md
 ```
 
-## Notes
-- Recommended Python 3.11+
-- Single-language desktop app only
-- Minimal project structure for easy maintenance
+## Recent Updates
+- ✅ Fixed table header display issues (proper column titles)
+- ✅ Resolved missing import errors
+- ✅ Improved translation system
+- ✅ Enhanced UI responsiveness
 
+## Requirements
+- Python 3.8+ (recommended 3.11+)
+- PyQt5 5.15+
+- Cross-platform compatibility
+
+## Development
+- Minimal project structure for easy maintenance
+- Single-language desktop app
+- Clean separation of concerns (UI, Core, Models)
+
+## License
 MIT License
