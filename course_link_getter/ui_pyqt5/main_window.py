@@ -1243,8 +1243,8 @@ class MainWindow(QMainWindow):
         
         try:
             with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-                # Export only the specified columns: title, category, subcategory, provider, link
-                fieldnames = ['title', 'category', 'subcategory', 'provider', 'link']
+                # Export only the specified columns: title, category, subcategory, link
+                fieldnames = ['title', 'category', 'subcategory', 'link']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 
                 writer.writeheader()
@@ -1253,7 +1253,6 @@ class MainWindow(QMainWindow):
                         'title': course.title,
                         'category': course.category,
                         'subcategory': course.subcategory,
-                        'provider': course.provider,
                         'link': course.link
                     })
             

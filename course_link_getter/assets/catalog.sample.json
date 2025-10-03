@@ -2,15 +2,26 @@
   "categories": [
     {
       "name": "English",
-      "subcategories": ["IELTS", "TOEIC", "Speaking"]
+      "subcategories": [
+        "IELTS",
+        "TOEIC",
+        "Speaking"
+      ]
     },
     {
       "name": "Programming",
-      "subcategories": ["Python", "Web", "Data"]
+      "subcategories": [
+        "Python",
+        "Web",
+        "Data"
+      ]
     },
     {
       "name": "Design",
-      "subcategories": ["UI/UX", "Graphic"]
+      "subcategories": [
+        "UI/UX",
+        "Graphic"
+      ]
     }
   ],
   "courses": [
@@ -19,234 +30,182 @@
       "title": "IELTS Academic Complete Preparation",
       "category": "English",
       "subcategory": "IELTS",
-      "provider": "British Council",
-      "link": "https://www.britishcouncil.org/ielts-preparation",
-      "tags": ["academic", "test-prep", "listening", "reading", "writing", "speaking"]
+      "link": "https://www.britishcouncil.org/ielts-preparation"
     },
     {
       "id": "eng-002",
       "title": "IELTS General Training Mastery",
       "category": "English",
       "subcategory": "IELTS",
-      "provider": "Cambridge English",
-      "link": "https://www.cambridgeenglish.org/ielts/general-training/",
-      "tags": ["general", "test-prep", "immigration", "work"]
+      "link": "https://www.cambridgeenglish.org/ielts/general-training/"
     },
     {
       "id": "eng-003",
       "title": "TOEIC Listening & Reading Intensive",
       "category": "English",
       "subcategory": "TOEIC",
-      "provider": "ETS Global",
-      "link": "https://www.ets.org/toeic/prepare/",
-      "tags": ["business", "listening", "reading", "workplace"]
+      "link": "https://www.ets.org/toeic/prepare/"
     },
     {
       "id": "eng-004",
       "title": "TOEIC Speaking & Writing Advanced",
       "category": "English",
       "subcategory": "TOEIC",
-      "provider": "Kaplan",
-      "link": "https://www.kaplaninternational.com/toeic-preparation",
-      "tags": ["business", "speaking", "writing", "communication"]
+      "link": "https://www.kaplaninternational.com/toeic-preparation"
     },
     {
       "id": "eng-005",
       "title": "Business English Speaking Fluency",
       "category": "English",
       "subcategory": "Speaking",
-      "provider": "EF English Live",
-      "link": "https://englishlive.ef.com/business-english/",
-      "tags": ["business", "conversation", "presentations", "meetings"]
+      "link": "https://englishlive.ef.com/business-english/"
     },
     {
       "id": "eng-006",
       "title": "Conversational English Mastery",
       "category": "English",
       "subcategory": "Speaking",
-      "provider": "Preply",
-      "link": "https://preply.com/en/online/english-speaking",
-      "tags": ["conversation", "daily-life", "pronunciation", "fluency"]
+      "link": "https://preply.com/en/online/english-speaking"
     },
     {
       "id": "eng-007",
       "title": "IELTS Speaking Band 9 Preparation",
       "category": "English",
       "subcategory": "Speaking",
-      "provider": "IELTS Liz",
-      "link": "https://ieltsliz.com/ielts-speaking-free-lessons/",
-      "tags": ["ielts", "speaking", "band-9", "test-prep"]
+      "link": "https://ieltsliz.com/ielts-speaking-free-lessons/"
     },
     {
       "id": "prog-001",
       "title": "Python for Data Science",
       "category": "Programming",
       "subcategory": "Python",
-      "provider": "Coursera",
-      "link": "https://www.coursera.org/specializations/python-data-science",
-      "tags": ["data-science", "pandas", "numpy", "matplotlib", "jupyter"]
+      "link": "https://www.coursera.org/specializations/python-data-science"
     },
     {
       "id": "prog-002",
       "title": "Complete Python Bootcamp",
       "category": "Programming",
       "subcategory": "Python",
-      "provider": "Udemy",
-      "link": "https://www.udemy.com/course/complete-python-bootcamp/",
-      "tags": ["beginner", "bootcamp", "fundamentals", "projects"]
+      "link": "https://www.udemy.com/course/complete-python-bootcamp/"
     },
     {
       "id": "prog-003",
       "title": "Advanced Python Programming",
       "category": "Programming",
       "subcategory": "Python",
-      "provider": "edX",
-      "link": "https://www.edx.org/course/advanced-python-programming",
-      "tags": ["advanced", "decorators", "generators", "async", "testing"]
+      "link": "https://www.edx.org/course/advanced-python-programming"
     },
     {
       "id": "prog-004",
       "title": "Full-Stack Web Development",
       "category": "Programming",
       "subcategory": "Web",
-      "provider": "freeCodeCamp",
-      "link": "https://www.freecodecamp.org/learn/",
-      "tags": ["html", "css", "javascript", "react", "nodejs", "mongodb"]
+      "link": "https://www.freecodecamp.org/learn/"
     },
     {
       "id": "prog-005",
       "title": "React & Redux Complete Guide",
       "category": "Programming",
       "subcategory": "Web",
-      "provider": "Udemy",
-      "link": "https://www.udemy.com/course/react-redux/",
-      "tags": ["react", "redux", "frontend", "javascript", "hooks"]
+      "link": "https://www.udemy.com/course/react-redux/"
     },
     {
       "id": "prog-006",
       "title": "Node.js Backend Development",
       "category": "Programming",
       "subcategory": "Web",
-      "provider": "Pluralsight",
-      "link": "https://www.pluralsight.com/courses/nodejs-backend-development",
-      "tags": ["nodejs", "backend", "express", "api", "database"]
+      "link": "https://www.pluralsight.com/courses/nodejs-backend-development"
     },
     {
       "id": "prog-007",
       "title": "Machine Learning with Python",
       "category": "Programming",
       "subcategory": "Data",
-      "provider": "Coursera",
-      "link": "https://www.coursera.org/learn/machine-learning",
-      "tags": ["machine-learning", "scikit-learn", "tensorflow", "algorithms"]
+      "link": "https://www.coursera.org/learn/machine-learning"
     },
     {
       "id": "prog-008",
       "title": "Data Analysis with Pandas",
       "category": "Programming",
       "subcategory": "Data",
-      "provider": "DataCamp",
-      "link": "https://www.datacamp.com/courses/pandas-foundations",
-      "tags": ["pandas", "data-analysis", "dataframe", "visualization"]
+      "link": "https://www.datacamp.com/courses/pandas-foundations"
     },
     {
       "id": "prog-009",
       "title": "SQL for Data Science",
       "category": "Programming",
       "subcategory": "Data",
-      "provider": "Coursera",
-      "link": "https://www.coursera.org/learn/sql-for-data-science",
-      "tags": ["sql", "database", "queries", "data-extraction"]
+      "link": "https://www.coursera.org/learn/sql-for-data-science"
     },
     {
       "id": "prog-010",
       "title": "JavaScript ES6+ Complete Course",
       "category": "Programming",
       "subcategory": "Web",
-      "provider": "YouTube",
-      "link": "https://www.youtube.com/playlist?list=PL4cUxeGkcC9haFPT7J25Q9GQf8bJxV3Uc",
-      "tags": ["javascript", "es6", "modern-js", "async", "promises"]
+      "link": "https://www.youtube.com/playlist?list=PL4cUxeGkcC9haFPT7J25Q9GQf8bJxV3Uc"
     },
     {
       "id": "design-001",
       "title": "UI/UX Design Fundamentals",
       "category": "Design",
       "subcategory": "UI/UX",
-      "provider": "Interaction Design Foundation",
-      "link": "https://www.interaction-design.org/courses",
-      "tags": ["user-experience", "user-interface", "wireframing", "prototyping"]
+      "link": "https://www.interaction-design.org/courses"
     },
     {
       "id": "design-002",
       "title": "Figma Masterclass",
       "category": "Design",
       "subcategory": "UI/UX",
-      "provider": "Skillshare",
-      "link": "https://www.skillshare.com/classes/figma-masterclass/",
-      "tags": ["figma", "design-tools", "collaboration", "prototyping"]
+      "link": "https://www.skillshare.com/classes/figma-masterclass/"
     },
     {
       "id": "design-003",
       "title": "Adobe XD Complete Course",
       "category": "Design",
       "subcategory": "UI/UX",
-      "provider": "Udemy",
-      "link": "https://www.udemy.com/course/adobe-xd-complete-course/",
-      "tags": ["adobe-xd", "ui-design", "prototyping", "adobe"]
+      "link": "https://www.udemy.com/course/adobe-xd-complete-course/"
     },
     {
       "id": "design-004",
       "title": "Photoshop CC Masterclass",
       "category": "Design",
       "subcategory": "Graphic",
-      "provider": "Adobe",
-      "link": "https://helpx.adobe.com/photoshop/tutorials.html",
-      "tags": ["photoshop", "photo-editing", "graphic-design", "adobe"]
+      "link": "https://helpx.adobe.com/photoshop/tutorials.html"
     },
     {
       "id": "design-005",
       "title": "Illustrator for Beginners",
       "category": "Design",
       "subcategory": "Graphic",
-      "provider": "LinkedIn Learning",
-      "link": "https://www.linkedin.com/learning/illustrator-2021-essential-training",
-      "tags": ["illustrator", "vector-graphics", "logo-design", "adobe"]
+      "link": "https://www.linkedin.com/learning/illustrator-2021-essential-training"
     },
     {
       "id": "design-006",
       "title": "Canva Design School",
       "category": "Design",
       "subcategory": "Graphic",
-      "provider": "Canva",
-      "link": "https://www.canva.com/designschool/",
-      "tags": ["canva", "templates", "social-media", "branding"]
+      "link": "https://www.canva.com/designschool/"
     },
     {
       "id": "eng-008",
       "title": "IELTS Writing Task 2 Mastery",
       "category": "English",
       "subcategory": "IELTS",
-      "provider": "IELTS Advantage",
-      "link": "https://www.ieltsadvantage.com/writing-task-2/",
-      "tags": ["ielts", "writing", "essay", "academic"]
+      "link": "https://www.ieltsadvantage.com/writing-task-2/"
     },
     {
       "id": "prog-011",
       "title": "Django Web Framework",
       "category": "Programming",
       "subcategory": "Python",
-      "provider": "Mozilla Developer Network",
-      "link": "https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django",
-      "tags": ["django", "web-framework", "python", "backend", "mvc"]
+      "link": "https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django"
     },
     {
       "id": "design-007",
       "title": "Sketch for UI Design",
       "category": "Design",
       "subcategory": "UI/UX",
-      "provider": "Sketch",
-      "link": "https://www.sketch.com/learn/",
-      "tags": ["sketch", "ui-design", "mac", "prototyping", "design-systems"]
+      "link": "https://www.sketch.com/learn/"
     }
   ]
 }

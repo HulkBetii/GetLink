@@ -126,9 +126,7 @@ class CatalogStore:
             # Pre-compile search terms for better performance
             filtered_courses = [
                 course for course in filtered_courses
-                if (text_lower in course.title.lower() or
-                    text_lower in course.provider.lower() or
-                    any(text_lower in tag.lower() for tag in course.tags))
+                if text_lower in course.title.lower()
             ]
         
         return filtered_courses
