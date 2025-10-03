@@ -29,3 +29,4 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+build_venv/
