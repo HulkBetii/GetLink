@@ -17,12 +17,32 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from .widgets.results_view import CourseTableModel, ButtonDelegate
-from .widgets.language_selector import LanguageSelector
-from .widgets.rtl_helper import RTLHelper
 from core.store import CatalogStore
 from core.models import Course
-from core.settings import SettingsManager
-from core.translations import init_translations, get_translation_manager, tr
+# from core.translations import init_translations, tr
+
+def tr(key: str, **kwargs) -> str:
+    """Simple translation function - returns English defaults."""
+    defaults = {
+        "search_placeholder": "Search courses...",
+        "category_all": "All Categories",
+        "subcategory_all": "All Subcategories",
+        "show_all": "All Results",
+        "export_csv": "Export CSV",
+        "copy_links": "Copy Visible Links",
+        "status_ready": "Ready",
+        "get_link": "Get Link",
+        "table_headers.title": "Title",
+        "table_headers.category": "Category",
+        "table_headers.subcategory": "Subcategory",
+        "table_headers.actions": "Actions",
+        "status_copied": "Copied to clipboard!",
+    }
+    return defaults.get(key, key)
+
+def init_translations(app):
+    """No-op translation initialization."""
+    return None
 
 
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGraphicsOpacityEffect
@@ -146,26 +166,10 @@ class NotificationWidget(QWidget):
         if not isinstance(parent, QWidget):
             return False
 
-        # Check if current language is RTL
-        is_rtl = False
-        try:
-            from core.translations import get_translation_manager
-            translation_manager = get_translation_manager()
-            if translation_manager:
-                is_rtl = translation_manager.is_rtl_language(translation_manager.get_current_language())
-        except:
-            pass
-
-        if is_rtl:
-            # For RTL languages, position at top-left
-            top_left_global = parent.mapToGlobal(QPoint(0, 0))
-            x = top_left_global.x() + margin
-            y = top_left_global.y() + margin
-        else:
-            # For LTR languages, position at top-right
-            top_right_global = parent.mapToGlobal(QPoint(parent.width(), 0))
-            x = top_right_global.x() - self.width() - margin
-            y = top_right_global.y() + margin
+        # Position at top-right (LTR only)
+        top_right_global = parent.mapToGlobal(QPoint(parent.width(), 0))
+        x = top_right_global.x() - self.width() - margin
+        y = top_right_global.y() + margin
 
         # Clamp trong vùng màn hình chứa parent
         screen = QGuiApplication.screenAt(QPoint(x, y)) or QGuiApplication.primaryScreen()
@@ -184,13 +188,7 @@ class NotificationWidget(QWidget):
             message = tr("status_copied")
         self.message_label.setText(message)
         
-        # Apply RTL support to notification
-        if hasattr(self, 'parent') and self.parent():
-            from core.translations import get_translation_manager
-            translation_manager = get_translation_manager()
-            if translation_manager:
-                is_rtl = translation_manager.is_rtl_language(translation_manager.get_current_language())
-                RTLHelper.apply_rtl_layout(self, is_rtl)
+        # RTL support removed
 
         placed = False
         if pin_to_parent:
@@ -219,7 +217,6 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.store = CatalogStore()
-        self.settings_manager = SettingsManager()
         self.current_courses: List[Course] = []
         
         # Disable translations
@@ -236,41 +233,6 @@ class MainWindow(QMainWindow):
         # Connect window events to reposition notification
         self.moveEvent = self._on_window_move
         self.resizeEvent = self._on_window_resize
-        
-        # Multilingual disabled: skip saved language
-    
-    def _load_saved_language(self):
-        """Load saved language from settings or detect system language."""
-        saved_language = self.settings_manager.get_language_code()
-        
-        # If no saved language, detect system language
-        if saved_language == "en" and self.translation_manager:
-            detected_language = self.translation_manager.detect_system_language()
-            if detected_language != "en":
-                saved_language = detected_language
-                self.settings_manager.set_language_settings(saved_language)
-        
-        if self.translation_manager:
-            self.translation_manager.load_language(saved_language)
-            self.language_selector.set_language(saved_language)
-    
-    def _on_language_changed(self, language_code: str):
-        """Handle language change."""
-        if self.translation_manager:
-            self.translation_manager.load_language(language_code)
-            self.settings_manager.set_language_settings(language_code)
-            
-            # Apply RTL support if needed
-            self._apply_rtl_support()
-            
-            # Reload data with new language
-            self._load_initial_data()
-            
-            # Update UI text
-            self._update_ui_text()
-            
-            # Refresh the display
-            self._on_filters_changed()
     
     def _update_ui_text(self):
         """Update all UI text with current translations."""
@@ -300,29 +262,6 @@ class MainWindow(QMainWindow):
         
         # Update status
         self.statusBar().showMessage(tr("status_ready"))
-    
-    def _apply_rtl_support(self):
-        """Apply RTL support to the entire application."""
-        if not self.translation_manager:
-            return
-        
-        is_rtl = self.translation_manager.is_rtl_language(self.translation_manager.get_current_language())
-        
-        # Apply RTL layout direction to main window
-        RTLHelper.apply_rtl_layout(self, is_rtl)
-        
-        # Apply RTL styles
-        rtl_styles = RTLHelper.get_rtl_style_adjustments(is_rtl)
-        current_style = self.styleSheet()
-        self.setStyleSheet(current_style + rtl_styles)
-        
-        # Apply RTL to all child widgets
-        self._apply_rtl_to_children(self, is_rtl)
-    
-    def _apply_rtl_to_children(self, widget, is_rtl: bool):
-        """Recursively apply RTL support to child widgets."""
-        for child in widget.findChildren(QWidget):
-            RTLHelper.apply_rtl_layout(child, is_rtl)
     
     def _on_window_move(self, event):
         """Handle window move event to reposition notification."""
@@ -749,10 +688,8 @@ class MainWindow(QMainWindow):
         row2_layout = QHBoxLayout()
         row2_layout.setSpacing(15)
         
-        # Language selector (disabled)
-        spacer = QWidget()
-        spacer.setFixedWidth(1)
-        row2_layout.addWidget(spacer)
+        # Language selector removed
+        row2_layout.addStretch()
         
         # Add spacer
         row2_layout.addStretch()
@@ -828,10 +765,7 @@ class MainWindow(QMainWindow):
         main_layout.addLayout(row1_layout)
         main_layout.addLayout(row2_layout)
         
-        # Apply RTL support to filter widget
-        if self.translation_manager:
-            is_rtl = self.translation_manager.is_rtl_language(self.translation_manager.get_current_language())
-            RTLHelper.apply_rtl_layout(filter_widget, is_rtl)
+        # RTL support removed
         
         parent_layout.addWidget(filter_widget)
     
@@ -973,10 +907,7 @@ class MainWindow(QMainWindow):
         # Apply initial proportional layout after the view is shown
         QTimer.singleShot(0, self._apply_results_column_layout)
         
-        # Apply RTL support to results widget
-        if self.translation_manager:
-            is_rtl = self.translation_manager.is_rtl_language(self.translation_manager.get_current_language())
-            RTLHelper.apply_rtl_layout(results_widget, is_rtl)
+        # RTL support removed
         
         parent_layout.addWidget(results_widget)
     

@@ -16,38 +16,27 @@ pip install -r requirements.txt
 python launch_pyqt5.py
 ```
 
-## Run tests
-```bash
-cd GetLink/course_link_getter
-pytest -q tests/test_store.py
-```
 
 ## Project layout
 ```
 course_link_getter/
 ├── assets/
-│   ├── catalog.sample.json
-│   └── catalog.multilingual.json
+│   └── catalog.sample.json
 ├── core/
 │   ├── models.py
-│   ├── settings.py
-│   ├── store.py
-│   └── translations.py  
+│   └── store.py
 ├── ui_pyqt5/
 │   ├── main_window.py
 │   └── widgets/
-│       ├── language_selector.py  
-│       ├── results_view.py
-│       ├── rtl_helper.py  
-│       └── toolbar.py
+│       └── results_view.py
 ├── launch_pyqt5.py
 ├── requirements.txt
-└── tests/
-    └── test_store.py
+└── README.md
 ```
 
 ## Notes
 - Recommended Python 3.11+
-- Multilingual/RTL features disabled; app uses single-language legacy catalog only
+- Single-language desktop app only
+- Minimal project structure for easy maintenance
 
 MIT License

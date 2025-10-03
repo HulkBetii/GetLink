@@ -28,9 +28,9 @@ def main():
         app.setAttribute(Qt.AA_EnableHighDpiScaling, True)
         app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
         
-        # Initialize translations
-        from core.translations import init_translations
-        init_translations(app)
+        # Translations disabled
+        # from core.translations import init_translations
+        # init_translations(app)
         
         # Import and create main window
         from ui_pyqt5.main_window import MainWindow
