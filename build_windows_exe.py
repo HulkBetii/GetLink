@@ -74,22 +74,44 @@ def build_single_exe():
     """Build single .exe file with PyInstaller"""
     print("📦 Building single .exe file with PyInstaller...")
     
-    cmd = [
-        'pyinstaller',
-        '--name=Course_Link_Getter',
-        '--windowed',
-        '--onefile',  # Single executable file
-        '--icon=course_link_getter/assets/icon.ico',
-        '--add-data=course_link_getter/assets;courses_link_getter/assets',
-        '--add-data=course_link_getter/core;courses_link_getter/core',
-        '--add-data=course_link_getter/ui_pyqt5;courses_link_getter/ui_pyqt5',
-        '--hidden-import=PyQt5.QtCore',
-        '--hidden-import=PyQt5.QtGui',
-        '--hidden-import=PyQt5.QtWidgets',
-        '--hidden-import=PyQt5.sip',
-        '--clean',
-        'course_link_getter/launch_pyqt5.py'
-    ]
+    # Use correct syntax for current platform
+    import platform
+    if platform.system() == 'Windows':
+        # Windows syntax
+        cmd = [
+            'pyinstaller',
+            '--name=Course_Link_Getter',
+            '--windowed',
+            '--onefile',
+            '--icon=course_link_getter/assets/icon.ico',
+            '--add-data=course_link_getter/assets;courses_link_getter/assets',
+            '--add-data=course_link_getter/core;courses_link_getter/core',
+            '--add-data=course_link_getter/ui_pyqt5;courses_link_getter/ui_pyqt5',
+            '--hidden-import=PyQt5.QtCore',
+            '--hidden-import=PyQt5.QtGui',
+            '--hidden-import=PyQt5.QtWidgets',
+            '--hidden-import=PyQt5.sip',
+            '--clean',
+            'course_link_getter/launch_pyqt5.py'
+        ]
+    else:
+        # macOS/Linux syntax
+        cmd = [
+            'pyinstaller',
+            '--name=Course_Link_Getter',
+            '--windowed',
+            '--onefile',
+            '--icon=course_link_getter/assets/icon.ico',
+            '--add-data=course_link_getter/assets:courses_link_getter/assets',
+            '--add-data=course_link_getter/core:courses_link_getter/core',
+            '--add-data=course_link_getter/ui_pyqt5:courses_link_getter/ui_pyqt5',
+            '--hidden-import=PyQt5.QtCore',
+            '--hidden-import=PyQt5.QtGui',
+            '--hidden-import=PyQt5.QtWidgets',
+            '--hidden-import=PyQt5.sip',
+            '--clean',
+            'course_link_getter/launch_pyqt5.py'
+        ]
     
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
