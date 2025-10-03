@@ -1,60 +1,152 @@
 # Course Link Getter
 
-Lightweight PyQt5 desktop app to search a course catalog with modern UI and clipboard integration.
+A lightweight PyQt5 desktop application for searching and managing course catalogs with modern UI and clipboard integration.
 
 ## Features
-- **Smart Filtering**: Category, Subcategory, and Text filtering with instant updates
-- **Clipboard Integration**: Copy single/bulk links with animated success notification
-- **Modern UI**: Proportional table layout with beautiful interface
-- **Export Functionality**: Export filtered results to CSV format
-- **26 Courses**: Pre-loaded course catalog
-- **macOS Ready**: Includes DMG installer and single executable
 
-## Quick Start
+- **🔍 Smart Search**: Real-time filtering by category, subcategory, and text content
+- **📋 Clipboard Integration**: Copy individual links or bulk copy filtered results
+- **📊 Data Export**: Export filtered results to CSV format
+- **🎨 Modern UI**: Clean, responsive interface with proportional table layout
+- **🚀 Quick Launch**: Fast startup with pre-loaded course data
+- **📱 Cross-Platform**: Works on macOS, Windows, and Linux
 
-### Option 1: Use Pre-built Package (Recommended)
-1. **Download**: `Course_Link_Getter_macOS.dmg` (35MB)
-2. **Install**: Open DMG and drag to Applications
-3. **Run**: Launch from Applications or Launchpad
+## 📦 Quick Start
 
-### Option 2: Use Single Executable
-1. **Download**: `Course_Link_Getter_Darwin_Distribution.zip` (30.6MB)
-2. **Extract**: Unzip the file
-3. **Run**: Double-click `Course_Link_Getter`
+### Prerequisites
+- Python 3.8 or higher
+- PyQt5 library
 
-### Option 3: Run from Source
-```bash
-git clone https://github.com/HulkBetii/GetLink.git
-cd GetLink/course_link_getter
-pip install -r requirements.txt
-python launch_pyqt5.py
+### Installation & Run
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/HulkBetii/GetLink.git
+   cd GetLink/course_link_getter
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Launch the application:**
+   ```bash
+   python launch_pyqt5.py
+   ```
+
+## 📁 Project Structure
+
+```
+course_link_getter/
+├── assets/                    # Application data and icons
+│   ├── catalog.sample.json   # Course catalog data
+│   └── icon.*               # Application icons (ico, icns, png)
+├── core/                     # Core business logic
+│   ├── models.py            # Data models (Course, etc.)
+│   └── store.py             # Data storage and management
+├── ui_pyqt5/                # User interface components
+│   ├── main_window.py       # Main application window
+│   └── widgets/
+│       └── results_view.py   # Course results table widget
+├── launch_pyqt5.py          # Application entry point
+├── requirements.txt          # Python dependencies
+└── README.md                # Application documentation
 ```
 
-## Project Structure
-```
-GetLink/
-├── course_link_getter/           # Main application
-│   ├── assets/                   # Course data and icons
-│   ├── core/                     # Business logic
-│   ├── ui_pyqt5/                 # User interface
-│   └── launch_pyqt5.py          # Application launcher
-├── Course_Link_Getter_macOS.dmg  # macOS installer
-├── Course_Link_Getter_Darwin_Distribution.zip  # Single executable
-└── README.md                     # This file
-```
+## 💻 System Requirements
 
-## System Requirements
-- **macOS**: 10.14+ (for pre-built packages)
-- **Python**: 3.8+ (for source code)
+- **Python**: 3.8+ (recommended: 3.11+)
+- **Operating System**: macOS, Windows, or Linux
+- **Memory**: 50MB RAM minimum
 - **Dependencies**: PyQt5, pydantic
 
-## How to Use
-1. **Launch** the application
-2. **Search** for courses using the search bar
-3. **Filter** by category or subcategory
-4. **Click "Get Link"** to copy course links
-5. **Use "Copy Visible Links"** for bulk copy
-6. **Export to CSV** for data backup
+## 🎯 How to Use
 
-## License
-MIT License
+1. **Launch** the application from terminal or IDE
+2. **Search** for courses using the search bar
+3. **Filter** results by category or subcategory
+4. **Copy links** using "Get Link" buttons or bulk "Copy Visible Links"
+5. **Export** filtered data to CSV if needed
+
+## 🛠️ Development
+
+### Adding New Courses
+Edit `assets/catalog.sample.json` to add or modify course data:
+
+```json
+{
+  "title": "Course Title",
+  "category": "Category Name", 
+  "subcategory": "Subcategory Name",
+  "link": "https://course-url.com"
+}
+```
+
+### Customizing UI
+- Modify `ui_pyqt5/main_window.py` for window layout
+- Update `ui_pyqt5/widgets/results_view.py` for table appearance
+- Add new icons to `assets/` directory
+
+### Adding Features
+- Extend `core/models.py` for new data structures
+- Update `core/store.py` for data management logic
+- Add new widgets in `ui_pyqt5/widgets/`
+
+## 📊 Sample Data
+
+The application comes with a pre-loaded catalog containing 26 sample courses across various categories:
+- Technology & Programming
+- Business & Management  
+- Design & Creative
+- And more...
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Application won't start:**
+- Ensure Python 3.8+ is installed
+- Install PyQt5: `pip install PyQt5`
+- Check that all files are in correct locations
+
+**No data visible:**
+- Verify `assets/catalog.sample.json` exists
+- Check file permissions
+- Look for console error messages
+
+**UI looks incorrect:**
+- Update PyQt5: `pip install --upgrade PyQt5`
+- Check system DPI settings
+- Verify Python version compatibility
+
+## 📝 Dependencies
+
+- **PyQt5**: Cross-platform GUI framework
+- **pydantic**: Data validation and settings management
+
+All dependencies are listed in `requirements.txt` and can be installed with:
+```bash
+pip install -r requirements.txt
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the source code for details.
+
+## 🔗 Links
+
+- **Repository**: [https://github.com/HulkBetii/GetLink](https://github.com/HulkBetii/GetLink)
+- **Documentation**: See `course_link_getter/README.md` for detailed app documentation
+
+---
+
+**Course Link Getter** - Simple, fast, and efficient course catalog management.
