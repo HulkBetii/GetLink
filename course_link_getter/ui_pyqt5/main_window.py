@@ -1019,12 +1019,32 @@ class MainWindow(QMainWindow):
     
     def _load_initial_data(self):
         """Load initial data from legacy single-language catalog only."""
-        legacy_path = Path(__file__).parent.parent / "assets" / "catalog.sample.json"
-        if legacy_path.exists():
-            if self.store.load_from_json(str(legacy_path)):
-                print(f"✅ Loaded {len(self.store.list_all())} courses from legacy catalog")
-                return True
-        print("❌ Failed to load catalog data")
+        # Try multiple possible paths for the catalog file
+        possible_paths = [
+            # Development path
+            Path(__file__).parent.parent / "assets" / "catalog.sample.json",
+            # PyInstaller packaged path
+            Path(__file__).parent.parent / "courses_link_getter" / "assets" / "catalog.sample.json",
+            # Alternative packaged path
+            Path(sys._MEIPASS) / "courses_link_getter" / "assets" / "catalog.sample.json" if hasattr(sys, '_MEIPASS') else None,
+        ]
+        
+        # Remove None paths
+        possible_paths = [p for p in possible_paths if p is not None]
+        
+        for legacy_path in possible_paths:
+            print(f"🔍 Trying catalog path: {legacy_path}")
+            if legacy_path.exists():
+                print(f"✅ Found catalog at: {legacy_path}")
+                if self.store.load_from_json(str(legacy_path)):
+                    print(f"✅ Loaded {len(self.store.list_all())} courses from legacy catalog")
+                    return True
+                else:
+                    print(f"❌ Failed to load data from: {legacy_path}")
+            else:
+                print(f"❌ Catalog not found at: {legacy_path}")
+        
+        print("❌ Failed to load catalog data from any path")
         return False
     
     def _on_filters_changed(self):
