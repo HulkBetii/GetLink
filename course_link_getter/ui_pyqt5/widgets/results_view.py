@@ -14,7 +14,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from core.models import Course
-from core.translations import tr
+
+def tr(key: str, **kwargs) -> str:
+    """Simple translation function - returns English defaults."""
+    defaults = {
+        "get_link": "Get Link",
+        "menu_copy_link": "Copy Link",
+        "table_headers.title": "Title",
+        "table_headers.category": "Category", 
+        "table_headers.subcategory": "Subcategory",
+        "table_headers.actions": "Actions",
+    }
+    return defaults.get(key, key)
 
 
 class ButtonDelegate(QStyledItemDelegate):
@@ -118,13 +129,6 @@ class CourseTableModel(QAbstractTableModel):
         
         # Get current language for multilingual data
         current_language = "en"
-        try:
-            from core.translations import get_translation_manager
-            translation_manager = get_translation_manager()
-            if translation_manager:
-                current_language = translation_manager.get_current_language()
-        except:
-            pass
         
         if role == Qt.DisplayRole:
             if col == 0:  # Title
